@@ -1,6 +1,3 @@
-// Copyright (C) 2017 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
-
 #ifndef CHATSERVER_H
 #define CHATSERVER_H
 
@@ -11,6 +8,8 @@
 
 QT_FORWARD_DECLARE_CLASS(QBluetoothServer)
 QT_FORWARD_DECLARE_CLASS(QBluetoothSocket)
+
+QT_USE_NAMESPACE
 
 //! [declaration]
 class ChatServer : public QObject
@@ -41,7 +40,6 @@ private:
     QBluetoothServer *rfcommServer = nullptr;
     QBluetoothServiceInfo serviceInfo;
     QList<QBluetoothSocket *> clientSockets;
-    QMap<QBluetoothSocket *, QString> clientNames;
 };
 //! [declaration]
 
