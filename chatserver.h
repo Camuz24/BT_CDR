@@ -2,6 +2,7 @@
 #define CHATSERVER_H
 
 #include <QtCore/qobject.h>
+#include "manager.h"
 
 #include <QtBluetooth/qbluetoothaddress.h>
 #include <QtBluetooth/qbluetoothserviceinfo.h>
@@ -22,7 +23,6 @@ public:
 
     void startServer(const QBluetoothAddress &localAdapter = QBluetoothAddress());
     void stopServer();
-    bool start = false;
 
 public slots:
     void sendMessage(const QString &message);
@@ -42,6 +42,7 @@ private:
     QBluetoothServer *rfcommServer = nullptr;
     QBluetoothServiceInfo serviceInfo;
     QList<QBluetoothSocket *> clientSockets;
+    manager* Manager;
 };
 //! [declaration]
 

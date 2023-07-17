@@ -5,6 +5,7 @@ include(CTest)
 enable_testing()
 
 set(CMAKE_AUTOMOC ON)
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
 
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Widgets REQUIRED)
@@ -12,7 +13,7 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
 find_package(Qt5 COMPONENTS Bluetooth Widgets REQUIRED)
 
 add_executable(bluetooth 
-main.cpp chatserver.h chatserver.cpp
+main.cpp chatserver.h chatserver.cpp manager.h manager.cpp
 )
 
 target_link_libraries(bluetooth Qt${QT_VERSION_MAJOR}::Core Qt5::Bluetooth Qt5::Widgets)

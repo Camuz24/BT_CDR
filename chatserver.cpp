@@ -12,6 +12,7 @@ ChatServer::ChatServer(QObject *parent)
     :   QObject(parent)
 {
     std::cout << "Constructor\n";
+    Manager = new manager();
 }
 
 ChatServer::~ChatServer()
@@ -32,7 +33,9 @@ void ChatServer::startServer(const QBluetoothAddress& localAdapter)
     rfcommServer = new QBluetoothServer(QBluetoothServiceInfo::RfcommProtocol, this);
     connect(rfcommServer, &QBluetoothServer::newConnection,
             this, QOverload<>::of(&ChatServer::clientConnected));
-    connect(this, &ChatServer::messageReceived, this, &ChatServer::printMessage);
+    connect(this, &ChatServer::messageReceived, Manager, &manager::writeOnSM);
+    connect(Manager, &manager::sendToClient, this, &ChatServer::sendMessage);
+
     std::cout << "HERE4\n";
     bool result = rfcommServer->listen(localAdapter);
     if (!result) {
@@ -98,8 +101,8 @@ void ChatServer::startServer(const QBluetoothAddress& localAdapter)
 
 void ChatServer::printMessage(const QString &sender, const QString &message){
     std::cout << "Print Message" << std::endl;
-    std::cout << message.toStdString() << std::endl;
-    start = true;
+    //std::cout << message.toStdString() << std::endl;
+    // sendMessage(QString::fromStdString("Helo from main :)"));
 }
 
 //! [stopServer]
@@ -121,9 +124,11 @@ void ChatServer::stopServer()
 void ChatServer::sendMessage(const QString &message)
 {
     QByteArray text = message.toUtf8() + '\n';
-
-    for (QBluetoothSocket *socket : qAsConst(clientSockets))
+    std::cout << "sending";
+    for (QBluetoothSocket *socket : qAsConst(clientSockets)){
         socket->write(text);
+        std::cout << "sending message" << std::endl;
+    }
 }
 //! [sendMessage]
 
@@ -134,7 +139,8 @@ void ChatServer::clientConnected()
     if (!socket)
         return;
 
-    std::cout << "clientConnected" << std::endl;
+    std::cout << "clientConnected" << std::endl; //TODO: start reading shared memory via manager
+    Manager->startThread();
     connect(socket, &QBluetoothSocket::readyRead, this, &ChatServer::readSocket);
     connect(socket, &QBluetoothSocket::disconnected, this, QOverload<>::of(&ChatServer::clientDisconnected));
     clientSockets.append(socket);
