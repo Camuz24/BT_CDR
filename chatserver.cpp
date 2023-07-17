@@ -164,7 +164,6 @@ void ChatServer::readSocket()
     if (!socket)
         return;
 
-    std::cout << "readSocket" << std::endl;
     while (socket->canReadLine()) {
         QByteArray line = socket->readLine().trimmed();
         std::cout << "Reading line" << std::endl;
