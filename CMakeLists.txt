@@ -12,7 +12,7 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
 find_package(Qt5 COMPONENTS Bluetooth Widgets REQUIRED)
 
 add_executable(bluetooth 
-main.cpp chatserver.h chatserver.cpp chat.h chat.cpp
+main.cpp chatserver.h chatserver.cpp
 )
 
 target_link_libraries(bluetooth Qt${QT_VERSION_MAJOR}::Core Qt5::Bluetooth Qt5::Widgets)

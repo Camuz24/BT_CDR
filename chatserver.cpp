@@ -32,6 +32,7 @@ void ChatServer::startServer(const QBluetoothAddress& localAdapter)
     rfcommServer = new QBluetoothServer(QBluetoothServiceInfo::RfcommProtocol, this);
     connect(rfcommServer, &QBluetoothServer::newConnection,
             this, QOverload<>::of(&ChatServer::clientConnected));
+    connect(this, &ChatServer::messageReceived, this, &ChatServer::printMessage);
     std::cout << "HERE4\n";
     bool result = rfcommServer->listen(localAdapter);
     if (!result) {
@@ -95,6 +96,12 @@ void ChatServer::startServer(const QBluetoothAddress& localAdapter)
     //! [Register service]
 }
 
+void ChatServer::printMessage(const QString &sender, const QString &message){
+    std::cout << "Print Message" << std::endl;
+    std::cout << message.toStdString() << std::endl;
+    start = true;
+}
+
 //! [stopServer]
 void ChatServer::stopServer()
 {
@@ -123,11 +130,11 @@ void ChatServer::sendMessage(const QString &message)
 //! [clientConnected]
 void ChatServer::clientConnected()
 {
-    std::cout << "clientConnected" << std::endl;
     QBluetoothSocket *socket = rfcommServer->nextPendingConnection();
     if (!socket)
         return;
 
+    std::cout << "clientConnected" << std::endl;
     connect(socket, &QBluetoothSocket::readyRead, this, &ChatServer::readSocket);
     connect(socket, &QBluetoothSocket::disconnected, this, QOverload<>::of(&ChatServer::clientDisconnected));
     clientSockets.append(socket);
@@ -157,10 +164,13 @@ void ChatServer::readSocket()
     if (!socket)
         return;
 
+    std::cout << "readSocket" << std::endl;
     while (socket->canReadLine()) {
         QByteArray line = socket->readLine().trimmed();
+        std::cout << "Reading line" << std::endl;
         emit messageReceived(socket->peerName(),
                              QString::fromUtf8(line.constData(), line.length()));
+        
     }
 }
 //! [readSocket]
