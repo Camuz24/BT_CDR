@@ -12,12 +12,16 @@ find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Widgets REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
 find_package(Qt5 COMPONENTS Bluetooth Widgets REQUIRED)
 
-add_executable(bluetooth 
-main.cpp chatserver.h chatserver.cpp manager.h manager.cpp pugixml-1.13/src/pugixml.hpp pugixml-1.13/src/pugiconfig.hpp pugixml-1.13/src/pugixml.cpp
+
+file(GLOB bluetooth_SRC
+     "*.h"
+     "*.cpp"
 )
+
+add_executable(bluetooth ${bluetooth_SRC} pugixml-1.13/src/pugixml.hpp pugixml-1.13/src/pugiconfig.hpp pugixml-1.13/src/pugixml.cpp)
 
 target_link_libraries(bluetooth Qt${QT_VERSION_MAJOR}::Core Qt5::Bluetooth Qt5::Widgets)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
-include(CPack)
+include(CPack) 

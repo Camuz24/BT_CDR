@@ -2,6 +2,7 @@
 #define MANAGER_H
 
 #include <QtCore/qobject.h>
+#include "shared_memory.h"
 // #pragma once
 QT_USE_NAMESPACE
 
@@ -14,6 +15,7 @@ public:
     ~manager();
     void threadReadFromSM();
     void startThread();
+    
 
 public slots:
     void writeOnSM(const QString &sender, const QString &message);
@@ -23,6 +25,7 @@ signals:
 
 private:
     int cadence;
+    shared_memory shmem;
 
 };
 
