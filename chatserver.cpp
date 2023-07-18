@@ -11,7 +11,6 @@ static const QLatin1String serviceUuid("e8e10f95-1a70-4b27-9ccf-02010264e9c8");
 ChatServer::ChatServer(QObject *parent)
     :   QObject(parent)
 {
-    std::cout << "Constructor\n";
     Manager = new manager();
 }
 
@@ -22,27 +21,27 @@ ChatServer::~ChatServer()
 
 void ChatServer::startServer(const QBluetoothAddress& localAdapter)
 {
-    std::cout << "HERE1\n";
+    //std::cout << "HERE1\n";
     if (rfcommServer){
-        std::cout << "HERE2\n";
+        //std::cout << "HERE2\n";
         return;
     }
 
     //! [Create the server]
-    std::cout << "HERE3\n";
+    //std::cout << "HERE3\n";
     rfcommServer = new QBluetoothServer(QBluetoothServiceInfo::RfcommProtocol, this);
     connect(rfcommServer, &QBluetoothServer::newConnection,
             this, QOverload<>::of(&ChatServer::clientConnected));
     connect(this, &ChatServer::messageReceived, Manager, &manager::writeOnSM);
     connect(Manager, &manager::sendToClient, this, &ChatServer::sendMessage);
 
-    std::cout << "HERE4\n";
+    //std::cout << "HERE4\n";
     bool result = rfcommServer->listen(localAdapter);
     if (!result) {
         qWarning() << "Cannot bind chat server to" << localAdapter.toString();
         return;
     }
-    std::cout << "HERE5\n";
+    //std::cout << "HERE5\n";
     //! [Create the server]
 
     //serviceInfo.setAttribute(QBluetoothServiceInfo::ServiceRecordHandle, (uint)0x00010010);
@@ -99,12 +98,6 @@ void ChatServer::startServer(const QBluetoothAddress& localAdapter)
     //! [Register service]
 }
 
-void ChatServer::printMessage(const QString &sender, const QString &message){
-    std::cout << "Print Message" << std::endl;
-    //std::cout << message.toStdString() << std::endl;
-    // sendMessage(QString::fromStdString("Helo from main :)"));
-}
-
 //! [stopServer]
 void ChatServer::stopServer()
 {
@@ -124,10 +117,10 @@ void ChatServer::stopServer()
 void ChatServer::sendMessage(const QString &message)
 {
     QByteArray text = message.toUtf8() + '\n';
-    std::cout << "sending";
+    // std::cout << "sending";
     for (QBluetoothSocket *socket : qAsConst(clientSockets)){
         socket->write(text);
-        std::cout << "sending message" << std::endl;
+        std::cout << "Sending message: " << message.toStdString() << std::endl;
     }
 }
 //! [sendMessage]
@@ -172,7 +165,7 @@ void ChatServer::readSocket()
 
     while (socket->canReadLine()) {
         QByteArray line = socket->readLine().trimmed();
-        std::cout << "Reading line" << std::endl;
+        // std::cout << "Reading line" << std::endl;
         emit messageReceived(socket->peerName(),
                              QString::fromUtf8(line.constData(), line.length()));
         

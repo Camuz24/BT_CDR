@@ -36,7 +36,6 @@ private slots:
     void clientConnected();
     void clientDisconnected();
     void readSocket();
-    void printMessage(const QString &sender, const QString &message);
 
 private:
     QBluetoothServer *rfcommServer = nullptr;

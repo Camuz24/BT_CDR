@@ -13,7 +13,7 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
 find_package(Qt5 COMPONENTS Bluetooth Widgets REQUIRED)
 
 add_executable(bluetooth 
-main.cpp chatserver.h chatserver.cpp manager.h manager.cpp
+main.cpp chatserver.h chatserver.cpp manager.h manager.cpp pugixml-1.13/src/pugixml.hpp pugixml-1.13/src/pugiconfig.hpp pugixml-1.13/src/pugixml.cpp
 )
 
 target_link_libraries(bluetooth Qt${QT_VERSION_MAJOR}::Core Qt5::Bluetooth Qt5::Widgets)
