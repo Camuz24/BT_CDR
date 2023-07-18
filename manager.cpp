@@ -4,17 +4,21 @@
 #include <unistd.h> 
 #include <thread>
 #include "pugixml-1.13/src/pugixml.hpp"
+
 using namespace pugi;
 
 manager::manager()
 {
     cadence = 0;
+    shmem.init();
 }
 
 manager::~manager()
 {
 
 }
+using std::string;
+
 
 
 void manager::writeOnSM(const QString &sender, const QString &message){
@@ -22,6 +26,8 @@ void manager::writeOnSM(const QString &sender, const QString &message){
     //TODO: if else if ... per scrivere su shared memory
     xml_document docString;
     xml_parse_result parsedMessage = docString.load(message.toStdString().c_str());
+    string type;
+    string payload;
 
     if(!parsedMessage){
         //TODO: send message to client telling that message is not parseable
@@ -30,10 +36,24 @@ void manager::writeOnSM(const QString &sender, const QString &message){
     }
 
     for(auto&& field: docString.children("message")){
-        std::cout << "Received message: " << std::endl;
-        std::cout << "\tType: \t\t" << field.child("type").text().as_string() << std::endl;
-        std::cout << "\tPayload: \t" << field.child("payload").text().as_string() << std::endl;
+        // std::cout << "Received message: " << std::endl;
+        // std::cout << "\tType: \t\t" << field.child("type").text().as_string() << std::endl;
+        // std::cout << "\tPayload: \t" << field.child("payload").text().as_string() << std::endl;
+         
+         type=field.child("type").text().as_string();
+         payload=field.child("payload").text().as_string();
     }
+
+    if(type=="upAndDown"){
+        shmem.data->up=payload=="plus";
+        shmem.data->down=payload=="minus";
+    }else if(type=="startAndStop"){
+        shmem.data->start_training=payload=="start";
+    }else if(type=="pid"){
+        shmem.data->pid=payload=="on";
+    }
+
+
 }
 
 void manager::threadReadFromSM(){
@@ -46,6 +66,9 @@ void manager::threadReadFromSM(){
         //else
             //emit sendToClient(QString::fromStdString("Connection failed"));
         //TODO refactor
+        emit sendToClient(QString::fromStdString(""));
+        shmem.data->up;
+
     }
 }
 
