@@ -3,6 +3,9 @@
 
 #include <QtCore/qobject.h>
 #include "shared_memory.h"
+#include <string>
+#include <vector>
+using std::string;
 // #pragma once
 QT_USE_NAMESPACE
 
@@ -24,8 +27,9 @@ signals:
     void sendToClient(const QString &message);
 
 private:
-    int cadence;
     shared_memory shmem;
+    string buildXMLMessage(const std::vector<string>& types, const std::vector<string>& payloads);
+
 
 };
 

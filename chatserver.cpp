@@ -39,6 +39,8 @@ void ChatServer::startServer(const QBluetoothAddress& localAdapter)
     bool result = rfcommServer->listen(localAdapter);
     if (!result) {
         qWarning() << "Cannot bind chat server to" << localAdapter.toString();
+        qWarning() << "\n!!!\nIf you get the error 'qt.bluetooth.bluez: Bluetooth device is powered off'\nexecute \n'$bluetoothctl power on'";
+        qWarning() << "If it fails with error 'Failed to set power on: org.bluez.Error.Failed'\nexecute\n'$rfkill block bluetooth' \n'$rfkill unblock bluetooth' and then again \n'$bluetoothctl power on'";
         return;
     }
     //std::cout << "HERE5\n";
@@ -70,7 +72,7 @@ void ChatServer::startServer(const QBluetoothAddress& localAdapter)
     //! [Service UUID set]
     serviceInfo.setServiceUuid(QBluetoothUuid(serviceUuid));
    // QString foo = QString::fromLatin1(serviceUuid);
-    std::cout << qPrintable(serviceUuid)<< std::endl;
+    std::cout << "server uuid: " << qPrintable(serviceUuid) << std::endl;
     //! [Service UUID set]
 
     //! [Service Discoverability]

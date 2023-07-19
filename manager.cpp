@@ -1,15 +1,17 @@
 #include "manager.h"
 #include <iostream>
 #include <string>
+#include <vector>
 #include <unistd.h> 
 #include <thread>
 #include "pugixml-1.13/src/pugixml.hpp"
 
 using namespace pugi;
+using std::string;
+using std::to_string;
 
 manager::manager()
 {
-    cadence = 0;
     shmem.init();
 }
 
@@ -17,7 +19,7 @@ manager::~manager()
 {
 
 }
-using std::string;
+
 
 
 
@@ -36,38 +38,64 @@ void manager::writeOnSM(const QString &sender, const QString &message){
     }
 
     for(auto&& field: docString.children("message")){
-        // std::cout << "Received message: " << std::endl;
-        // std::cout << "\tType: \t\t" << field.child("type").text().as_string() << std::endl;
-        // std::cout << "\tPayload: \t" << field.child("payload").text().as_string() << std::endl;
+        std::cout << "Received message: " << std::endl;
+        std::cout << "\tType: \t\t" << field.child("type").text().as_string() << std::endl;
+        std::cout << "\tPayload: \t" << field.child("payload").text().as_string() << std::endl;
          
-         type=field.child("type").text().as_string();
-         payload=field.child("payload").text().as_string();
+        type=field.child("type").text().as_string();
+        payload=field.child("payload").text().as_string();
     }
 
     if(type=="upAndDown"){
-        shmem.data->up=payload=="plus";
-        shmem.data->down=payload=="minus";
+        shmem.data->up = payload=="plus";
+        shmem.data->down = payload=="minus";
     }else if(type=="startAndStop"){
-        shmem.data->start_training=payload=="start";
+        shmem.data->start_training = payload=="start";
+        shmem.data->stop_training = payload=="stop";
     }else if(type=="pid"){
         shmem.data->pid=payload=="on";
     }
 
 
 }
-
+/**
+ * Read periodically from shared memory and send message to client view
+*/
 void manager::threadReadFromSM(){
-    int hz = 1;
+    float hz = 1.0;
+    std::cout << "Updating client view at " << hz << " Hz" << std::endl;
     while(true){
-        usleep(5000000);
-        std::string s = std::to_string(cadence++);
-        //if (cadence%2 == 0)
-            //emit sendToClient(QString::fromStdString("Cardio sensor not connected and cassano is the best player in the world"));
-        //else
-            //emit sendToClient(QString::fromStdString("Connection failed"));
-        //TODO refactor
-        emit sendToClient(QString::fromStdString(""));
-        shmem.data->up;
+        
+        //update start and stop status
+        // emit sendToClient(QString::fromStdString(buildXMLMessage("startAndStop", std::to_string(shmem.data->start_training))));
+        //update pid status
+        // emit sendToClient(QString::fromStdString(buildXMLMessage("pid", std::to_string(shmem.data->pid))));
+        //update current cadence status
+        //emit sendToClient(QString::fromStdString(buildXMLMessage("current_cadence", std::to_string(shmem.data->current_cadence))));
+        //update target cadence
+        //TODO: Qual è la variabile giusta
+
+        //update stimulation values
+        /*emit sendToClient(QString::fromStdString(buildXMLMessage("current_quadriceps_left", std::to_string(shmem.data->current_quadriceps_left))));
+        emit sendToClient(QString::fromStdString(buildXMLMessage("current_hamstring_left", std::to_string(shmem.data->current_hamstring_left))));
+        emit sendToClient(QString::fromStdString(buildXMLMessage("current_gluteus_left", std::to_string(shmem.data->current_gluteus_left))));
+        emit sendToClient(QString::fromStdString(buildXMLMessage("current_gastro_left", std::to_string(shmem.data->current_gastro_left))));
+
+        emit sendToClient(QString::fromStdString(buildXMLMessage("current_quadriceps_right", std::to_string(shmem.data->current_quadriceps_right))));
+        emit sendToClient(QString::fromStdString(buildXMLMessage("current_hamstring_right", std::to_string(shmem.data->current_hamstring_right))));
+        emit sendToClient(QString::fromStdString(buildXMLMessage("current_gluteus_right", std::to_string(shmem.data->current_gluteus_right))));
+        emit sendToClient(QString::fromStdString(buildXMLMessage("current_gastro_right", std::to_string(shmem.data->current_gastro_right))));
+        */
+
+        //TODO: startAndStop not ok to send to tablet! Need something like training ongoing
+        std::vector<string> types = {"startAndStop", "pid", "current_cadence"};
+        std::vector<string> payloads = {to_string(shmem.data->start_training), to_string(shmem.data->pid), to_string(shmem.data->current_cadence)};
+
+        string xmlMessage = buildXMLMessage(types, payloads);
+        // std::cout << xmlMessage << std::endl;
+        emit sendToClient(QString::fromStdString(xmlMessage));
+
+        usleep((int) (1.0/hz * 1e6));
 
     }
 }
@@ -85,26 +113,54 @@ void manager::startThread() {
     
     }
 
-/*
-#include <iostream>
-#include <chrono>
-#include <ctime>
+string manager::buildXMLMessage(const std::vector<string>& types, const std::vector<string>& payloads) {
+    if (types.size() != payloads.size()) {
+        std::cout << "Types and payloads sizes are different. Cannot send message"; 
+        return "";
+    }
 
-int main() {
-    // Get the current time point
-    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+    std::string XMLmsg = "<messages>\n";
+    for (size_t i = 0; i < types.size(); ++i) {
+        XMLmsg += "  <message>\n";
+        XMLmsg += "    <type>" + types[i] + "</type>\n";
+        XMLmsg += "    <payload>" + payloads[i] + "</payload>\n";
+        XMLmsg += "  </message>\n";
+    }
+    XMLmsg += "</messages>\n";
 
-    // Convert the current time point to a time_t object
-    std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
-
-    // Convert the time_t object to a string representation
-    char buffer[26];
-    ctime_s(buffer, sizeof(buffer), &currentTime);
-
-    // Print the current time
-    std::cout << "Current time: " << buffer;
-
-    return 0;
+    return XMLmsg;
 }
 
+/*
+<messages>
+  <message>
+    <type>TYPE_1</type>
+    <payload>MESSAGE_1_PAYLOAD</payload>
+  </message>
+  <message>
+    <type>TYPE_2</type>
+    <payload>MESSAGE_2_PAYLOAD</payload>
+  </message>
+</messages>
+*/
+
+
+/*
+for(auto&& field: docString.child("messages").children("message")){
+        std::cout << "Received message: " << std::endl;
+        std::cout << "\tType: \t\t" << field.child("type").text().as_string() << std::endl;
+        std::cout << "\tPayload: \t" << field.child("payload").text().as_string() << std::endl;
+         
+        type=field.child("type").text().as_string();
+        payload=field.child("payload").text().as_string();
+
+        if(type=="upAndDown"){
+            shmem.data->up=payload=="plus";
+            shmem.data->down=payload=="minus";
+        }else if(type=="startAndStop"){
+            shmem.data->start_training=payload=="start";
+        }else if(type=="pid"){
+            shmem.data->pid=payload=="on";
+        }
+    }
 */

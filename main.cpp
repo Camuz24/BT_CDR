@@ -11,6 +11,7 @@ int main(int argc, char *argv[]){
 
     QCoreApplication a(argc, argv);
     QBluetoothAddress address("E4:5F:01:F5:E4:4A");
+    
     ChatServer* chatServer;
     chatServer = new ChatServer();
     chatServer->startServer(address);

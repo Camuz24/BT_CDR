@@ -72,20 +72,20 @@ class shared_memory
         double current_gastro_right = 0.0;
 
         // Others
-        bool start_training   = 0;
-        bool pause_training   = 0;
-        bool stop_training    = 0;
-        bool pid              = 0;
-        float current_cadence = 0.0;
-        bool up               = 0;
-        bool down             = 0;
+        bool start_training   = 0; //ok
+        bool pause_training   = 0; 
+        bool stop_training    = 0; 
+        bool pid              = 0; //ok
+        float current_cadence = 0.0; //ok
+        bool up               = 0; //ok
+        bool down             = 0; //ok
 
         // Input variables from GUI
 
         int modality_from_gui = 0;
         float saturation_current_from_gui  = 0.0;
         float pulse_width_from_gui  = 0.0;
-        float target_cadence_from_gui  = 0.0;
+        float target_cadence_from_gui  = 0.0; //ok
 
         int type_training_from_gui = 0;
 
