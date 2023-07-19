@@ -122,7 +122,7 @@ void ChatServer::sendMessage(const QString &message)
     // std::cout << "sending";
     for (QBluetoothSocket *socket : qAsConst(clientSockets)){
         socket->write(text);
-        std::cout << "Sending message: " << message.toStdString() << std::endl;
+        // std::cout << "Sending message: " << message.toStdString() << std::endl;
     }
 }
 //! [sendMessage]
@@ -135,6 +135,7 @@ void ChatServer::clientConnected()
         return;
 
     std::cout << "clientConnected" << std::endl; //TODO: start reading shared memory via manager
+    Manager->stopThread = false;
     Manager->startThread();
     connect(socket, &QBluetoothSocket::readyRead, this, &ChatServer::readSocket);
     connect(socket, &QBluetoothSocket::disconnected, this, QOverload<>::of(&ChatServer::clientDisconnected));
@@ -147,6 +148,7 @@ void ChatServer::clientConnected()
 void ChatServer::clientDisconnected()
 {
     QBluetoothSocket *socket = qobject_cast<QBluetoothSocket *>(sender());
+    Manager->stopThread = true;
     if (!socket)
         return;
 

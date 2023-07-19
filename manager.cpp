@@ -13,14 +13,15 @@ using std::to_string;
 manager::manager()
 {
     shmem.init();
+    shmem.data->start_training = 0;
+    shmem.data->pid = 0;
+    stopThread = false;
 }
 
 manager::~manager()
 {
 
 }
-
-
 
 
 void manager::writeOnSM(const QString &sender, const QString &message){
@@ -53,18 +54,16 @@ void manager::writeOnSM(const QString &sender, const QString &message){
         shmem.data->start_training = payload=="start";
         shmem.data->stop_training = payload=="stop";
     }else if(type=="pid"){
-        shmem.data->pid=payload=="on";
+        shmem.data->pid=payload=="1";
     }
-
-
 }
 /**
  * Read periodically from shared memory and send message to client view
 */
 void manager::threadReadFromSM(){
-    float hz = 1.0;
+    float hz = 0.2;
     std::cout << "Updating client view at " << hz << " Hz" << std::endl;
-    while(true){
+    while(!stopThread){
         
         //update start and stop status
         // emit sendToClient(QString::fromStdString(buildXMLMessage("startAndStop", std::to_string(shmem.data->start_training))));
@@ -91,6 +90,9 @@ void manager::threadReadFromSM(){
         std::vector<string> types = {"startAndStop", "pid", "current_cadence"};
         std::vector<string> payloads = {to_string(shmem.data->start_training), to_string(shmem.data->pid), to_string(shmem.data->current_cadence)};
 
+        std::cout << "start -> " << shmem.data->start_training << std::endl;
+        std::cout << "pid   -> " << shmem.data->pid << std::endl;
+
         string xmlMessage = buildXMLMessage(types, payloads);
         // std::cout << xmlMessage << std::endl;
         emit sendToClient(QString::fromStdString(xmlMessage));
@@ -98,6 +100,8 @@ void manager::threadReadFromSM(){
         usleep((int) (1.0/hz * 1e6));
 
     }
+
+    std::cout << "Thread terminated";
 }
 
 void manager::startThread() {

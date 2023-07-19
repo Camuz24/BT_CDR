@@ -18,6 +18,7 @@ public:
     ~manager();
     void threadReadFromSM();
     void startThread();
+    bool stopThread;
     
 
 public slots:
