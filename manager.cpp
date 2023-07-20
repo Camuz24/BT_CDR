@@ -16,6 +16,7 @@ manager::manager()
     shmem.data->start_training = 0;
     shmem.data->pid = 0;
     stopThread = false;
+    stopSend = false;
 }
 
 manager::~manager()
@@ -27,6 +28,8 @@ manager::~manager()
 void manager::writeOnSM(const QString &sender, const QString &message){
     //std::cout << message.toStdString() << std::endl;
     //TODO: if else if ... per scrivere su shared memory
+    stopSend = true;
+    std::cout << "stop send" << std::endl;
     xml_document docString;
     xml_parse_result parsedMessage = docString.load(message.toStdString().c_str());
     string type;
@@ -52,56 +55,38 @@ void manager::writeOnSM(const QString &sender, const QString &message){
         shmem.data->down = payload=="minus";
     }else if(type=="startAndStop"){
         shmem.data->start_training = payload=="start";
-        shmem.data->stop_training = payload=="stop";
+        // shmem.data->stop_training = payload=="stop";
     }else if(type=="pid"){
         shmem.data->pid=payload=="1";
     }
+    stopSend = false;
+    std::cout << "start send" << std::endl;
 }
 /**
  * Read periodically from shared memory and send message to client view
 */
 void manager::threadReadFromSM(){
-    float hz = 0.2;
+    float hz = 1;
     std::cout << "Updating client view at " << hz << " Hz" << std::endl;
     while(!stopThread){
-        
-        //update start and stop status
-        // emit sendToClient(QString::fromStdString(buildXMLMessage("startAndStop", std::to_string(shmem.data->start_training))));
-        //update pid status
-        // emit sendToClient(QString::fromStdString(buildXMLMessage("pid", std::to_string(shmem.data->pid))));
-        //update current cadence status
-        //emit sendToClient(QString::fromStdString(buildXMLMessage("current_cadence", std::to_string(shmem.data->current_cadence))));
-        //update target cadence
-        //TODO: Qual è la variabile giusta
-
-        //update stimulation values
-        /*emit sendToClient(QString::fromStdString(buildXMLMessage("current_quadriceps_left", std::to_string(shmem.data->current_quadriceps_left))));
-        emit sendToClient(QString::fromStdString(buildXMLMessage("current_hamstring_left", std::to_string(shmem.data->current_hamstring_left))));
-        emit sendToClient(QString::fromStdString(buildXMLMessage("current_gluteus_left", std::to_string(shmem.data->current_gluteus_left))));
-        emit sendToClient(QString::fromStdString(buildXMLMessage("current_gastro_left", std::to_string(shmem.data->current_gastro_left))));
-
-        emit sendToClient(QString::fromStdString(buildXMLMessage("current_quadriceps_right", std::to_string(shmem.data->current_quadriceps_right))));
-        emit sendToClient(QString::fromStdString(buildXMLMessage("current_hamstring_right", std::to_string(shmem.data->current_hamstring_right))));
-        emit sendToClient(QString::fromStdString(buildXMLMessage("current_gluteus_right", std::to_string(shmem.data->current_gluteus_right))));
-        emit sendToClient(QString::fromStdString(buildXMLMessage("current_gastro_right", std::to_string(shmem.data->current_gastro_right))));
-        */
 
         //TODO: startAndStop not ok to send to tablet! Need something like training ongoing
-        std::vector<string> types = {"startAndStop", "pid", "current_cadence"};
-        std::vector<string> payloads = {to_string(shmem.data->start_training), to_string(shmem.data->pid), to_string(shmem.data->current_cadence)};
+        if(!stopSend){
+            std::vector<string> types = {"startAndStop"};//, "pid", "current_cadence"};
+            std::vector<string> payloads = {to_string(shmem.data->start_training)};//, to_string(shmem.data->pid), to_string(shmem.data->current_cadence)};
 
-        std::cout << "start -> " << shmem.data->start_training << std::endl;
-        std::cout << "pid   -> " << shmem.data->pid << std::endl;
+            std::cout << "start -> " << shmem.data->start_training << std::endl;
+            std::cout << "pid   -> " << shmem.data->pid << std::endl;
 
-        string xmlMessage = buildXMLMessage(types, payloads);
-        // std::cout << xmlMessage << std::endl;
-        emit sendToClient(QString::fromStdString(xmlMessage));
-
+            string xmlMessage = buildXMLMessage(types, payloads);
+            // std::cout << xmlMessage << std::endl;
+        
+            emit sendToClient(QString::fromStdString(xmlMessage));
+        }
         usleep((int) (1.0/hz * 1e6));
-
     }
 
-    std::cout << "Thread terminated";
+    std::cout << "Thread terminated" << std::endl;
 }
 
 void manager::startThread() {

@@ -30,7 +30,7 @@ signals:
 private:
     shared_memory shmem;
     string buildXMLMessage(const std::vector<string>& types, const std::vector<string>& payloads);
-
+    bool stopSend;
 
 };
 
