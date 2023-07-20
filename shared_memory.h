@@ -59,6 +59,25 @@ class shared_memory
         double quadr_right= 0.0;
 
 
+
+
+        // Mean power calculated over 360 deg
+        double mean_power_left = 0.0;
+        double mean_power_right = 0.0;
+        double percentage_left = 0.0;
+        double percentage_right = 0.0;
+        double pedal_smoothness_left = 0.0;
+        double pedal_smoothness_right = 0.0;
+
+        // Istantaneous pedal efficiency
+        double pedal_efficiency_left = 0.0;
+        double pedal_efficiency_right = 0.0;
+
+        // Heart rate monitor
+        double heart_rate = 0.0;
+        double RR = 0.0;
+
+
         // Variables TO gui
         //Stimulation variables
         double current_quadriceps_left = 0.0;
@@ -72,20 +91,20 @@ class shared_memory
         double current_gastro_right = 0.0;
 
         // Others
-        bool start_training   = 0; //ok
-        bool pause_training   = 0; 
-        bool stop_training    = 0; 
-        bool pid              = 0; //ok
-        float current_cadence = 0.0; //ok
-        bool up               = 0; //ok
-        bool down             = 0; //ok
+        bool start_training   = 0;
+        bool pause_training   = 0;
+        bool stop_training    = 0;
+        bool pid              = 0;
+        float current_cadence = 0.0;
+        bool up               = 1;
+        bool down             = 0;
 
         // Input variables from GUI
 
         int modality_from_gui = 0;
         float saturation_current_from_gui  = 0.0;
         float pulse_width_from_gui  = 0.0;
-        float target_cadence_from_gui  = 0.0; //ok
+        float target_cadence_from_gui  = 0.0;
 
         int type_training_from_gui = 0;
 
@@ -128,9 +147,30 @@ class shared_memory
         double range_iniziali_sx[8] = {0};
         double range_iniziali_dx[8] = {0};
 
-       
+        bool pippo_start = 0;
+        bool pippo_pid   = 0;
+        bool pippo_up    = 0;
+        bool pippo_down  = 0;
 
-        
+
+        int cicli_ble_right = 0;
+        bool flag_ciclo_right = 0;
+        int cicli_ble_left = 0;
+        bool flag_ciclo_left = 0;
+
+        //mich gui
+        double simLQ = 0.0;
+        double simRQ = 0.0;
+        double simLH = 0.0;
+        double simRH = 0.0;
+
+        double coeffQ = 0.0;
+        double coeffH = 0.0;
+
+        //motor variable
+        int duty_cycle= 0;
+        double pid_motor = 0;
+        bool flag_motor=1;
 
 
     };

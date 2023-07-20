@@ -3,7 +3,7 @@
 
 #include <QtCore/qobject.h>
 #include "manager.h"
-
+#include "shared_memory.h"
 #include <QtBluetooth/qbluetoothaddress.h>
 #include <QtBluetooth/qbluetoothserviceinfo.h>
 
@@ -18,7 +18,7 @@ class ChatServer : public QObject
     Q_OBJECT
 
 public:
-    explicit ChatServer(QObject *parent = nullptr);
+    explicit ChatServer(shared_memory shmem, QObject *parent = nullptr);
     ~ChatServer();
 
     void startServer(const QBluetoothAddress &localAdapter = QBluetoothAddress());
@@ -42,6 +42,7 @@ private:
     QBluetoothServiceInfo serviceInfo;
     QList<QBluetoothSocket *> clientSockets;
     manager* Manager;
+    shared_memory shmem;
 };
 //! [declaration]
 

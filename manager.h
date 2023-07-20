@@ -5,6 +5,7 @@
 #include "shared_memory.h"
 #include <string>
 #include <vector>
+#include <signal.h>
 using std::string;
 // #pragma once
 QT_USE_NAMESPACE
@@ -14,7 +15,7 @@ class manager : public QObject
     Q_OBJECT
 
 public:
-    manager();
+    manager(shared_memory shmem);
     ~manager();
     void threadReadFromSM();
     void startThread();

@@ -10,11 +10,12 @@ using namespace pugi;
 using std::string;
 using std::to_string;
 
-manager::manager()
+manager::manager(shared_memory shmem)
 {
-    shmem.init();
-    shmem.data->start_training = 0;
-    shmem.data->pid = 0;
+    this->shmem = shmem;
+    this->shmem.init();
+    this->shmem.data->start_training = 0;
+    this->shmem.data->pid = 0;
     stopThread = false;
     stopSend = false;
 }
@@ -66,13 +67,15 @@ void manager::writeOnSM(const QString &sender, const QString &message){
  * Read periodically from shared memory and send message to client view
 */
 void manager::threadReadFromSM(){
-    float hz = 1;
+    float hz = 13;
     std::cout << "Updating client view at " << hz << " Hz" << std::endl;
+    usleep(1 * 1e6);
     while(!stopThread){
 
         //TODO: startAndStop not ok to send to tablet! Need something like training ongoing
         if(!stopSend){
-            std::vector<string> types = {"startAndStop", "pid", "current_cadence"};
+            std::vector<string> types = {"startAndStop", "pid", 
+            "current_cadence"};
             std::vector<string> payloads = {to_string(shmem.data->start_training),
             to_string(shmem.data->pid), to_string((int) shmem.data->current_cadence)};
 
@@ -81,7 +84,7 @@ void manager::threadReadFromSM(){
 
             string xmlMessage = buildXMLMessage(types, payloads);
             // std::cout << xmlMessage << std::endl;
-        
+            //emit sendToClient(QString::fromStdString(""));
             emit sendToClient(QString::fromStdString(xmlMessage));
         }
         usleep((int) (1.0/hz * 1e6));
