@@ -72,8 +72,9 @@ void manager::threadReadFromSM(){
 
         //TODO: startAndStop not ok to send to tablet! Need something like training ongoing
         if(!stopSend){
-            std::vector<string> types = {"startAndStop"};//, "pid", "current_cadence"};
-            std::vector<string> payloads = {to_string(shmem.data->start_training)};//, to_string(shmem.data->pid), to_string(shmem.data->current_cadence)};
+            std::vector<string> types = {"startAndStop", "pid", "current_cadence"};
+            std::vector<string> payloads = {to_string(shmem.data->start_training),
+            to_string(shmem.data->pid), to_string((int) shmem.data->current_cadence)};
 
             std::cout << "start -> " << shmem.data->start_training << std::endl;
             std::cout << "pid   -> " << shmem.data->pid << std::endl;
