@@ -7,6 +7,8 @@
 #include <unistd.h>
 #include "shared_memory.h"
 
+using std::string;
+
 shared_memory shmem;
 
 void myInterruptHandler (int signum) {
@@ -23,7 +25,13 @@ int main(int argc, char *argv[]){
     std::cout << "Starting server...!\n";
 
     QCoreApplication a(argc, argv);
-    QBluetoothAddress address("E4:5F:01:F5:E4:4A");
+
+    QList<QBluetoothHostInfo> localAdapters;
+    localAdapters = QBluetoothLocalDevice::allDevices();
+    string myMAC = localAdapters.at(0).address().toString().toStdString();
+    std::cout << myMAC << std::endl;
+
+    QBluetoothAddress address(myMAC.c_str());
     
     ChatServer* chatServer;
     chatServer = new ChatServer(shmem);

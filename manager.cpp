@@ -70,8 +70,15 @@ void manager::writeOnSM(const QString &sender, const QString &message){
  * Read periodically from shared memory and send message to client view
 */
 void manager::threadReadFromSM(){
-    float hz = 60;
-    int counter = 0;
+    float hz = 30;
+    int counter_motivational = 0;
+    int motivational_msg_delay = 7; //delay between each motivational msg
+    float hz_high_priority = 60;
+    int wait_cycles = (int) (hz_high_priority/hz); // send low priority message every wait_cycles cycles
+    int counter_low_priority = 0;
+    std::vector<string> types;
+    std::vector<string> payloads;
+
     std::cout << "Updating client view at " << hz << " Hz" << std::endl;
     usleep(1 * 1e6);
     while(!stopThread){
@@ -79,7 +86,9 @@ void manager::threadReadFromSM(){
         //TODO: startAndStop not ok to send to tablet! Need something like training ongoing
         if(!stopSend){
             
-            std::vector<string> types = {
+            if(counter_low_priority == wait_cycles){
+                counter_low_priority = 0;
+                types = {
                 START_STOP, PID, CURRENT_CADENCE, ANGLE_ENCODER, CHECK_STIM1, CHECK_STIM2,
                 CHECK_PEDAL_LEFT, CHECK_PEDAL_RIGHT, CHECK_CARDIO, TRG_CAD,
                 PID_PERCENTAGE, CURRENT_PERCENTAGE,
@@ -87,31 +96,38 @@ void manager::threadReadFromSM(){
                 QUAD_R, GLU_R, HAM_R, GAS_R, HEART_RATE, CURRENT_OR_TARGET
                 };
             
-            std::vector<string> payloads = {to_string(shmem.data->start_training),
-            to_string(shmem.data->pid), to_string((int) shmem.data->current_cadence),
-            to_string((int) shmem.data->angle_encoder), to_string(shmem.data->check_stim1),
-            to_string(shmem.data->check_stim2), to_string(shmem.data->check_pedal_left),
-            to_string(shmem.data->check_pedal_right), to_string(shmem.data->check_cardio),
-            to_string((int) shmem.data->trg_cad), to_string(shmem.data->pid_percentage),
-            to_string(shmem.data->current_percentage), to_string((int) shmem.data->theorCurrentsL[0]),
-            to_string((int) shmem.data->theorCurrentsL[1]), to_string((int) shmem.data->theorCurrentsL[2]),
-            to_string((int) shmem.data->theorCurrentsL[3]), to_string((int) shmem.data->theorCurrentsR[0]),
-            to_string((int) shmem.data->theorCurrentsR[1]), to_string((int) shmem.data->theorCurrentsR[2]),
-            to_string((int) shmem.data->theorCurrentsR[3]), to_string((int) shmem.data->heart_rate)};
+                payloads = {to_string(shmem.data->start_training),
+                to_string(shmem.data->pid), to_string((int) shmem.data->current_cadence),
+                to_string((int) shmem.data->angle_encoder), to_string(shmem.data->check_stim1),
+                to_string(shmem.data->check_stim2), to_string(shmem.data->check_pedal_left),
+                to_string(shmem.data->check_pedal_right), to_string(shmem.data->check_cardio),
+                to_string((int) shmem.data->trg_cad), to_string(shmem.data->pid_percentage),
+                to_string(shmem.data->current_percentage), to_string((int) shmem.data->theorCurrentsL[0]),
+                to_string((int) shmem.data->theorCurrentsL[1]), to_string((int) shmem.data->theorCurrentsL[2]),
+                to_string((int) shmem.data->theorCurrentsL[3]), to_string((int) shmem.data->theorCurrentsR[0]),
+                to_string((int) shmem.data->theorCurrentsR[1]), to_string((int) shmem.data->theorCurrentsR[2]),
+                to_string((int) shmem.data->theorCurrentsR[3]), to_string((int) shmem.data->heart_rate)};
 
-            if(shmem.data->pid){
-                payloads.push_back(to_string((int) shmem.data->trg_cad));
+                if(shmem.data->pid){
+                    payloads.push_back(to_string((int) shmem.data->trg_cad));
+                }else{
+                    payloads.push_back(
+                        to_string((int) (shmem.data->theorCurrentsL[0] > shmem.data->theorCurrentsR[0] ? shmem.data->theorCurrentsL[0] : shmem.data->theorCurrentsR[0])));
+                }
             }else{
-                payloads.push_back(
-                    to_string((int) (shmem.data->theorCurrentsL[0] > shmem.data->theorCurrentsR[0] ? shmem.data->theorCurrentsL[0] : shmem.data->theorCurrentsR[0])));
-            }
+                types = {ANGLE_ENCODER};
+                payloads = {to_string((int) shmem.data->angle_encoder)};
 
-            if(counter % (int)(hz*7) == 0){
+            }
+            counter_low_priority++;
+            
+
+            if(counter_motivational % (int)(hz*motivational_msg_delay) == 0){
                 types.push_back(ERROR);
                 payloads.push_back(getMotivation());
-                counter = 0;
+                counter_motivational = 0;
             }
-            counter++;
+            counter_motivational++;
 
             std::cout << "start -> " << shmem.data->start_training << std::endl;
             std::cout << "pid   -> " << shmem.data->pid << std::endl;
@@ -121,7 +137,7 @@ void manager::threadReadFromSM(){
             //emit sendToClient(QString::fromStdString(""));
             emit sendToClient(QString::fromStdString(xmlMessage));
         }
-        usleep((int) (1.0/hz * 1e6));
+        usleep((int) (1.0/hz_high_priority * 1e6));
     }
 
     std::cout << "Thread terminated" << std::endl;
