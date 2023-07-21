@@ -20,3 +20,4 @@
 #define GAS_R                "t" // 
 #define HEART_RATE           "u" // 
 #define CURRENT_OR_TARGET    "v" // 
+#define ERROR                "w"

@@ -17,6 +17,7 @@ manager::manager(shared_memory shmem)
 {
     this->shmem = shmem;
     this->shmem.init();
+    this->shmem.data -> angle_encoder = 321;
     stopThread = false;
     stopSend = false;
     std::srand(static_cast<unsigned>(std::time(0)));
@@ -69,7 +70,7 @@ void manager::writeOnSM(const QString &sender, const QString &message){
  * Read periodically from shared memory and send message to client view
 */
 void manager::threadReadFromSM(){
-    float hz = 0.5;
+    float hz = 60;
     int counter = 0;
     std::cout << "Updating client view at " << hz << " Hz" << std::endl;
     usleep(1 * 1e6);
@@ -88,25 +89,25 @@ void manager::threadReadFromSM(){
             
             std::vector<string> payloads = {to_string(shmem.data->start_training),
             to_string(shmem.data->pid), to_string((int) shmem.data->current_cadence),
-            to_string(shmem.data->angle_encoder), to_string(shmem.data->check_stim1),
+            to_string((int) shmem.data->angle_encoder), to_string(shmem.data->check_stim1),
             to_string(shmem.data->check_stim2), to_string(shmem.data->check_pedal_left),
             to_string(shmem.data->check_pedal_right), to_string(shmem.data->check_cardio),
-            to_string(shmem.data->trg_cad), to_string(shmem.data->pid_percentage),
-            to_string(shmem.data->current_percentage), to_string(shmem.data->theorCurrentsL[0]),
-            to_string(shmem.data->theorCurrentsL[1]), to_string(shmem.data->theorCurrentsL[2]),
-            to_string(shmem.data->theorCurrentsL[3]), to_string(shmem.data->theorCurrentsR[0]),
-            to_string(shmem.data->theorCurrentsR[1]), to_string(shmem.data->theorCurrentsR[2]),
-            to_string(shmem.data->theorCurrentsR[3]), to_string(shmem.data->heart_rate)};
+            to_string((int) shmem.data->trg_cad), to_string(shmem.data->pid_percentage),
+            to_string(shmem.data->current_percentage), to_string((int) shmem.data->theorCurrentsL[0]),
+            to_string((int) shmem.data->theorCurrentsL[1]), to_string((int) shmem.data->theorCurrentsL[2]),
+            to_string((int) shmem.data->theorCurrentsL[3]), to_string((int) shmem.data->theorCurrentsR[0]),
+            to_string((int) shmem.data->theorCurrentsR[1]), to_string((int) shmem.data->theorCurrentsR[2]),
+            to_string((int) shmem.data->theorCurrentsR[3]), to_string((int) shmem.data->heart_rate)};
 
             if(shmem.data->pid){
-                payloads.push_back(to_string(shmem.data->trg_cad));
+                payloads.push_back(to_string((int) shmem.data->trg_cad));
             }else{
                 payloads.push_back(
-                    to_string(shmem.data->theorCurrentsL[0] > shmem.data->theorCurrentsR[0] ? shmem.data->theorCurrentsL[0] : shmem.data->theorCurrentsR[0]));
+                    to_string((int) (shmem.data->theorCurrentsL[0] > shmem.data->theorCurrentsR[0] ? shmem.data->theorCurrentsL[0] : shmem.data->theorCurrentsR[0])));
             }
 
             if(counter % (int)(hz*7) == 0){
-                types.push_back("error");
+                types.push_back(ERROR);
                 payloads.push_back(getMotivation());
                 counter = 0;
             }
@@ -145,14 +146,14 @@ string manager::buildXMLMessage(const std::vector<string>& types, const std::vec
         return "";
     }
 
-    std::string XMLmsg = "<messages>\n";
+    std::string XMLmsg = "<m>";
     for (size_t i = 0; i < types.size(); ++i) {
         // XMLmsg += "  <message>\n";
-        XMLmsg += "    <t>" + types[i] + "</t>\n";
-        XMLmsg += "    <p>" + payloads[i] + "</p>\n";
+        XMLmsg += "<t>" + types[i] + "</t>";
+        XMLmsg += "<p>" + payloads[i] + "</p>";
         // XMLmsg += "  </message>\n";
     }
-    XMLmsg += "</messages>\n";
+    XMLmsg += "</m>";
 
     return XMLmsg;
 }
