@@ -123,7 +123,7 @@ void ChatServer::sendMessage(const QString &message)
     // std::cout << "sending";
     for (QBluetoothSocket *socket : qAsConst(clientSockets)){
         socket->write(text);
-        // std::cout << "Sending message: " << message.toStdString() << std::endl;
+        std::cout << "Sending message: " << message.toStdString() << std::endl;
     }
 }
 //! [sendMessage]

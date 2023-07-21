@@ -14,7 +14,7 @@ class shared_memory
 
     struct shared_memory_packet{
 
-        int angle_encoder = 0;
+        int angle_encoder = 0; //angle
 
         bool stop =false;
         bool use_ros=false;
@@ -76,7 +76,7 @@ class shared_memory
         // Heart rate monitor
         double heart_rate = 0.0;
         double RR = 0.0;
-
+        
 
         // Variables TO gui
         //Stimulation variables
@@ -90,13 +90,19 @@ class shared_memory
         double current_gluteus_right = 0.0;
         double current_gastro_right = 0.0;
 
+        int pid_percentage=0;// da qui in giù
+        int current_percentage=0;
+
+        double theorCurrentsR[4]={0};
+        double theorCurrentsL[4]={0};
+
         // Others
         bool start_training   = 0;
         bool pause_training   = 0;
         bool stop_training    = 0;
         bool pid              = 0;
         float current_cadence = 0.0;
-        bool up               = 1;
+        bool up               = 0;
         bool down             = 0;
 
         // Input variables from GUI
@@ -132,7 +138,7 @@ class shared_memory
         int channel_calibration    = 0;
         int flag_calibrate         = 0;
 
-        int trg_cad = 0;
+        int trg_cad = 0; //questa
         std::string file_name ;
         char file_name_char;
 
