@@ -70,10 +70,10 @@ void manager::writeOnSM(const QString &sender, const QString &message){
  * Read periodically from shared memory and send message to client view
 */
 void manager::threadReadFromSM(){
-    float hz = 30;
+    float hz = 15;
     int counter_motivational = 0;
     int motivational_msg_delay = 7; //delay between each motivational msg
-    float hz_high_priority = 60;
+    float hz_high_priority = 30;
     int wait_cycles = (int) (hz_high_priority/hz); // send low priority message every wait_cycles cycles
     int counter_low_priority = 0;
     std::vector<string> types;
