@@ -122,7 +122,7 @@ void manager::threadReadFromSM(){
             counter_low_priority++;
             
 
-            if(counter_motivational % (int)(hz*motivational_msg_delay) == 0){
+            if(counter_motivational % (int)(hz_high_priority*motivational_msg_delay) == 0){
                 types.push_back(ERROR);
                 payloads.push_back(getMotivation());
                 counter_motivational = 0;
