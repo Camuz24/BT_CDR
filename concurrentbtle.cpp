@@ -61,9 +61,9 @@ void write_heart_rate(double hr_value){
 
 
 // code to initialize btle function
-ConcurrentBtle::ConcurrentBtle(shared_memory shmem, QObject *parent) : QObject(parent)
+ConcurrentBtle::ConcurrentBtle(shared_memory* shmem, QObject *parent) : QObject(parent)
 {
-    this->shmem = shmem;
+    global_shmem = *shmem;
     global_shmem.init();
     desiredDevices << QBluetoothAddress(QStringLiteral("EE:5D:EE:37:DE:25")); /*Polar H10 8E5AB228*/
 
@@ -71,7 +71,7 @@ ConcurrentBtle::ConcurrentBtle(shared_memory shmem, QObject *parent) : QObject(p
     agent->setLowEnergyDiscoveryTimeout(10000);
     connect(agent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
             this, [this](const QBluetoothDeviceInfo &info){
-        qDebug() << "Found device: " << info.address();
+        // qDebug() << "Found device: " << info.address();
 
         foundDevices.append(info);
     });
@@ -87,7 +87,7 @@ ConcurrentBtle::ConcurrentBtle(shared_memory shmem, QObject *parent) : QObject(p
             this, [this](){
         temp_check = 1;
         // write2temp(temp_check);
-        qDebug() << "temp check" << temp_check;
+        // qDebug() << "temp check" << temp_check;
         qDebug() << "Discovery finished";
         // add a boolean to check connection with shared memory
 
@@ -107,7 +107,7 @@ ConcurrentBtle::ConcurrentBtle(shared_memory shmem, QObject *parent) : QObject(p
                 return;
             }
         }
-        qDebug() << "Found required devices" << desiredDevices;
+        qDebug() << "Found required device(s)" << desiredDevices;
         establishConnection();
 
     });
@@ -119,7 +119,7 @@ ConcurrentBtle::ConcurrentBtle(shared_memory shmem, QObject *parent) : QObject(p
     connect(timer, &QTimer::timeout, this, [this]() {
         if (agent->isActive())
             return;
-        if (!device1 || !device2 || !device3 )
+        if (!device3)
             establishConnection();
     });
     timer->start();
@@ -152,18 +152,18 @@ void ConcurrentBtle::startSearch()
 
 void ConcurrentBtle::establishConnection()
 {
-    std::cout << "establish connection" << std::endl;
     if (!device3) {
+        std::cout << "establish connection" << std::endl;
         for (int i=0;i<1;i++) {
             if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("EE:5D:EE:37:DE:25")))
             device3 = new QLowEnergyController(desiredDevices.at(i));
         }
-        std::cout << "after for" << std::endl;
+        
         device3->setParent(this);
         connect(device3, &QLowEnergyController::connected, this, [&](){
             ok_cardio=1;
             // write2tempcardio(ok_cardio);
-            // global_shmem.data->check_cardio = ok_cardio;
+            global_shmem.data->check_cardio = ok_cardio;
 
             qDebug() << "*********** Device 3 Polar H10 connected" << device3->remoteAddress();
             // global_shmem.data->check_cardio = ok_cardio;
@@ -180,6 +180,8 @@ void ConcurrentBtle::establishConnection()
             QTimer::singleShot(10000, this, [&](){
                 qDebug() << "Reconnecting device 3";
                 device3->connectToDevice();
+                // device3 = nullptr;
+                global_shmem.data->heart_rate = 0.0;
             });
         });
 
@@ -188,9 +190,7 @@ void ConcurrentBtle::establishConnection()
            setupNotificationCardio(device3, QStringLiteral("Device 3"));
         });
 
-        std::cout << "connect before device" << std::endl;
         device3->connectToDevice();
-        std::cout << "connect 2 device" << std::endl;
     }
 }
 
@@ -237,7 +237,7 @@ void ConcurrentBtle::setupNotificationCardio(QLowEnergyController *device, const
             this, [name](const QLowEnergyCharacteristic &characteristic, const QByteArray &newValue) {
 
         int a = (newValue.size());
-        qDebug() << "Size:" << a;
+        // qDebug() << "Size:" << a;
 
         const char *data = newValue.constData();
 
@@ -246,19 +246,9 @@ void ConcurrentBtle::setupNotificationCardio(QLowEnergyController *device, const
 
         //HR 8bit
         quint8 *heartrate= (quint8 *) &data[1];
-        qDebug() << "HR value" << name << *heartrate <<"bpm" ;
+        // qDebug() << "HR value" << name << *heartrate <<"bpm" ;
         double hr_value=*heartrate;
         write_heart_rate(hr_value);
-
-
-////        RR interval
-//        for(int k = 1; k < (a/2); k++) {
-////            int b=2*k;
-////            qDebug() << "Index:" << b;
-//            quint16 *RRinterval = (quint16 *) &data[2*k];
-//            qDebug() << "RR interval value:" << (double)(*RRinterval)/1024 << "s";
-//            double rr_value = *RRinterval;
-//        }
 
     });
    service->discoverDetails();

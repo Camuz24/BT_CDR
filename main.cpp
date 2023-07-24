@@ -36,10 +36,10 @@ int main(int argc, char *argv[]){
     
     ChatServer* chatServer;
     // shmem.init();
-    chatServer = new ChatServer(shmem);
+    chatServer = new ChatServer(&shmem);
     chatServer->startServer(address);
     ConcurrentBtle* btle;
-    btle = new ConcurrentBtle(shmem); 
+    btle = new ConcurrentBtle(&shmem); 
     
     signal(SIGINT, myInterruptHandler);
 

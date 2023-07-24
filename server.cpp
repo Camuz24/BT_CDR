@@ -8,11 +8,11 @@
 static const QLatin1String serviceUuid("e8e10f95-1a70-4b27-9ccf-02010264e9c8");
 //! [Service UUID]
 
-ChatServer::ChatServer(shared_memory shmem, QObject *parent)
+ChatServer::ChatServer(shared_memory* shmem, QObject *parent)
     :   QObject(parent)
 {
-    this->shmem = shmem;
-    Manager = new manager(shmem);
+    this->shmem = *shmem;
+    Manager = new manager(&(this->shmem));
 }
 
 ChatServer::~ChatServer()

@@ -15,7 +15,7 @@ class manager : public QObject
     Q_OBJECT
 
 public:
-    manager(shared_memory shmem);
+    manager(shared_memory* shmem);
     ~manager();
     void threadReadFromSM();
     void startThread();

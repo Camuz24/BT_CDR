@@ -16,8 +16,7 @@ class ConcurrentBtle : public QObject
     Q_OBJECT
 
 public:
-    explicit ConcurrentBtle(shared_memory shmem, QObject *parent = nullptr);
-    shared_memory shmem;
+    explicit ConcurrentBtle(shared_memory* shmem, QObject *parent = nullptr);
 
 signals:
 

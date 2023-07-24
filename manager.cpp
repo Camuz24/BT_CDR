@@ -13,9 +13,9 @@ using namespace pugi;
 using std::string;
 using std::to_string;
 
-manager::manager(shared_memory shmem)
+manager::manager(shared_memory* shmem)
 {
-    this->shmem = shmem;
+    this->shmem = *shmem;
     this->shmem.init();
     this->shmem.data -> angle_encoder = 321;
     stopThread = false;
