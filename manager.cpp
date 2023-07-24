@@ -129,8 +129,8 @@ void manager::threadReadFromSM(){
             }
             counter_motivational++;
 
-            std::cout << "start -> " << shmem.data->start_training << std::endl;
-            std::cout << "pid   -> " << shmem.data->pid << std::endl;
+            /*std::cout << "start -> " << shmem.data->start_training << std::endl;
+            std::cout << "pid   -> " << shmem.data->pid << std::endl;*/
 
             string xmlMessage = buildXMLMessage(types, payloads);
             // std::cout << xmlMessage << std::endl;
