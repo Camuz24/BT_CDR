@@ -6,6 +6,7 @@
 #include <QtWidgets/qapplication.h>
 #include <unistd.h>
 #include "shared_memory.h"
+#include "concurrentbtle.h"
 
 using std::string;
 
@@ -34,8 +35,11 @@ int main(int argc, char *argv[]){
     QBluetoothAddress address(myMAC.c_str());
     
     ChatServer* chatServer;
-    chatServer = new ChatServer(shmem);
+    // shmem.init();
+    chatServer = new ChatServer(&shmem);
     chatServer->startServer(address);
+    ConcurrentBtle* btle;
+    btle = new ConcurrentBtle(&shmem); 
     
     signal(SIGINT, myInterruptHandler);
 

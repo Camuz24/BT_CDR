@@ -13,9 +13,9 @@ using namespace pugi;
 using std::string;
 using std::to_string;
 
-manager::manager(shared_memory shmem)
+manager::manager(shared_memory* shmem)
 {
-    this->shmem = shmem;
+    this->shmem = *shmem;
     this->shmem.init();
     this->shmem.data -> angle_encoder = 321;
     stopThread = false;
@@ -122,15 +122,15 @@ void manager::threadReadFromSM(){
             counter_low_priority++;
             
 
-            if(counter_motivational % (int)(hz*motivational_msg_delay) == 0){
+            if(counter_motivational % (int)(hz_high_priority*motivational_msg_delay) == 0){
                 types.push_back(ERROR);
                 payloads.push_back(getMotivation());
                 counter_motivational = 0;
             }
             counter_motivational++;
 
-            std::cout << "start -> " << shmem.data->start_training << std::endl;
-            std::cout << "pid   -> " << shmem.data->pid << std::endl;
+            /*std::cout << "start -> " << shmem.data->start_training << std::endl;
+            std::cout << "pid   -> " << shmem.data->pid << std::endl;*/
 
             string xmlMessage = buildXMLMessage(types, payloads);
             // std::cout << xmlMessage << std::endl;
