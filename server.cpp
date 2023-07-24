@@ -1,4 +1,4 @@
-#include "chatserver.h"
+#include "server.h"
 #include <iostream>
 #include <QtBluetooth/qbluetoothserver.h>
 #include <QtBluetooth/qbluetoothsocket.h>
