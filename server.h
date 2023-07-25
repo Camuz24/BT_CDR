@@ -18,7 +18,7 @@ class ChatServer : public QObject
     Q_OBJECT
 
 public:
-    explicit ChatServer(shared_memory* shmem, QObject *parent = nullptr);
+    explicit ChatServer(QObject *parent = nullptr);
     ~ChatServer();
 
     void startServer(const QBluetoothAddress &localAdapter = QBluetoothAddress());
@@ -42,7 +42,6 @@ private:
     QBluetoothServiceInfo serviceInfo;
     QList<QBluetoothSocket *> clientSockets;
     manager* Manager;
-    shared_memory shmem;
 };
 //! [declaration]
 
