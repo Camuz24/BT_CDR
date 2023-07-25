@@ -109,7 +109,8 @@ class shared_memory
 
         int modality_from_gui = 0;
         float saturation_current_from_gui  = 0.0;
-        float pulse_width_from_gui  = 0.0;
+        int pulse_width_from_gui = 0;
+        int stimulation_frequency = 0;
         float target_cadence_from_gui  = 0.0;
 
         int type_training_from_gui = 0;
