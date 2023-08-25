@@ -79,7 +79,7 @@ void manager::threadReadFromSM(){
     std::vector<string> types;
     std::vector<string> payloads;
 
-    std::cout << "Updating client view at " << hz << " Hz" << std::endl;
+    std::cout << "Updating client view at " << hz << " Hz" << std::endl; 
     usleep(1 * 1e6);
     while(!stopThread){
 
@@ -129,8 +129,8 @@ void manager::threadReadFromSM(){
             }
             counter_motivational++;
 
-            std::cout << "start -> " << shmem.data->start_training << std::endl;
-            std::cout << "pid   -> " << shmem.data->pid << std::endl;
+            // std::cout << "start -> " << shmem.data->start_training << std::endl;
+            // std::cout << "pid   -> " << shmem.data->pid << std::endl;
 
             string xmlMessage = buildXMLMessage(types, payloads);
             // std::cout << xmlMessage << std::endl;
