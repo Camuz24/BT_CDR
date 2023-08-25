@@ -1,7 +1,7 @@
 #include <iostream>
 #include <QCoreApplication>
 #include <QtBluetooth/qbluetoothlocaldevice.h>
-#include "chatserver.h"
+#include "server.h"
 #include <QBluetoothAddress>
 #include <QtWidgets/qapplication.h>
 #include <unistd.h>
