@@ -107,7 +107,7 @@ void manager::threadReadFromSM(){
                 to_string((int) shmem.data->theorCurrentsL[3]), to_string((int) shmem.data->theorCurrentsR[0]),
                 to_string((int) shmem.data->theorCurrentsR[1]), to_string((int) shmem.data->theorCurrentsR[2]),
                 to_string((int) shmem.data->theorCurrentsR[3]), to_string((int) shmem.data->heart_rate)};
-
+                
                 if(shmem.data->pid){
                     payloads.push_back(to_string((int) shmem.data->trg_cad));
                 }else{
