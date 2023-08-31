@@ -7,6 +7,7 @@
 #include <iostream>
 #include <QCoreApplication>
 #include "shared_memory.h"
+#include "singletonSM.h"
 
 using namespace std;
 
@@ -16,7 +17,7 @@ class ConcurrentBtle : public QObject
     Q_OBJECT
 
 public:
-    explicit ConcurrentBtle(shared_memory* shmem, QObject *parent = nullptr);
+    explicit ConcurrentBtle(QObject *parent = nullptr);
 
 signals:
 

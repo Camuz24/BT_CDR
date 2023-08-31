@@ -53,18 +53,19 @@ int count_force_left = 0;
 double sum_meanforce_left= 0.0;
 bool flag_ciclo_left = 0;
 
-shared_memory global_shmem;
-
 void write_heart_rate(double hr_value){
-    global_shmem.data->heart_rate=hr_value;
+    // std::cout << "writing HR" << std::endl;
+
+    SingletonSM* singletonSM = SingletonSM::getInstance();
+    shared_memory* shmem = singletonSM->get_SM();
+
+    shmem->data->heart_rate=hr_value;
 }
 
 
 // code to initialize btle function
-ConcurrentBtle::ConcurrentBtle(shared_memory* shmem, QObject *parent) : QObject(parent)
+ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
 {
-    global_shmem = *shmem;
-    global_shmem.init();
     desiredDevices << QBluetoothAddress(QStringLiteral("EE:5D:EE:37:DE:25")); /*Polar H10 8E5AB228*/
 
     agent = new QBluetoothDeviceDiscoveryAgent(this);
@@ -163,10 +164,12 @@ void ConcurrentBtle::establishConnection()
         connect(device3, &QLowEnergyController::connected, this, [&](){
             ok_cardio=1;
             // write2tempcardio(ok_cardio);
-            global_shmem.data->check_cardio = ok_cardio;
+
+            SingletonSM* singletonSM = SingletonSM::getInstance();
+            shared_memory* shmem = singletonSM->get_SM();
+            shmem->data->check_cardio = ok_cardio;
 
             qDebug() << "*********** Device 3 Polar H10 connected" << device3->remoteAddress();
-            // global_shmem.data->check_cardio = ok_cardio;
             device3->discoverServices();
         });
 
@@ -175,13 +178,17 @@ void ConcurrentBtle::establishConnection()
             // write2tempcardio(ok_cardio);
             // hr_sconnesso=500;
             // write_heart_rate(hr_sconnesso);
-            global_shmem.data->check_cardio = ok_cardio;
+            SingletonSM* singletonSM = SingletonSM::getInstance();
+            shared_memory* shmem = singletonSM->get_SM();
+            shmem->data->check_cardio = ok_cardio;
             qDebug() << "*********** Device 3 Disconnected";
             QTimer::singleShot(10000, this, [&](){
                 qDebug() << "Reconnecting device 3";
                 device3->connectToDevice();
                 // device3 = nullptr;
-                global_shmem.data->heart_rate = 0.0;
+                SingletonSM* singletonSM = SingletonSM::getInstance();
+                shared_memory* shmem = singletonSM->get_SM();
+                shmem->data->heart_rate = 0.0;
             });
         });
 

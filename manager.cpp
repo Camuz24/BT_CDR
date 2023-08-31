@@ -13,11 +13,8 @@ using namespace pugi;
 using std::string;
 using std::to_string;
 
-manager::manager(shared_memory* shmem)
+manager::manager()
 {
-    this->shmem = *shmem;
-    this->shmem.init();
-    this->shmem.data -> angle_encoder = 321;
     stopThread = false;
     stopSend = false;
     std::srand(static_cast<unsigned>(std::time(0)));
@@ -39,6 +36,9 @@ void manager::writeOnSM(const QString &sender, const QString &message){
     string type;
     string payload;
 
+    SingletonSM* singletonSM = SingletonSM::getInstance();
+    shared_memory* shmem = singletonSM->get_SM();
+
     if(!parsedMessage){
         //TODO: send message to client telling that message is not parseable
         std::cout << "return";
@@ -55,13 +55,12 @@ void manager::writeOnSM(const QString &sender, const QString &message){
     }
 
     if(type=="upAndDown"){
-        shmem.data->up = payload=="plus";
-        shmem.data->down = payload=="minus";
+        shmem->data->up = payload=="plus";
+        shmem->data->down = payload=="minus";
     }else if(type=="startAndStop"){
-        shmem.data->start_training = payload=="start";
-        // shmem.data->stop_training = payload=="stop";
+        shmem->data->start_training = payload=="start";
     }else if(type=="pid"){
-        shmem.data->pid=payload=="1";
+        shmem->data->pid=payload=="1";
     }
     stopSend = false;
     std::cout << "start send" << std::endl;
@@ -79,6 +78,9 @@ void manager::threadReadFromSM(){
     std::vector<string> types;
     std::vector<string> payloads;
 
+    SingletonSM* singletonSM = SingletonSM::getInstance();
+    shared_memory* shmem = singletonSM->get_SM();
+
     std::cout << "Updating client view at " << hz << " Hz" << std::endl;
     usleep(1 * 1e6);
     while(!stopThread){
@@ -93,30 +95,32 @@ void manager::threadReadFromSM(){
                 CHECK_PEDAL_LEFT, CHECK_PEDAL_RIGHT, CHECK_CARDIO, TRG_CAD,
                 PID_PERCENTAGE, CURRENT_PERCENTAGE,
                 QUAD_L, GLU_L, HAM_L, GAS_L,
-                QUAD_R, GLU_R, HAM_R, GAS_R, HEART_RATE, CURRENT_OR_TARGET
+                QUAD_R, GLU_R, HAM_R, GAS_R,
+                HEART_RATE, STIMULATOR_FREQUENCY, STIMULATOR_PULSEWIDTH, CURRENT_OR_TARGET
                 };
             
-                payloads = {to_string(shmem.data->start_training),
-                to_string(shmem.data->pid), to_string((int) shmem.data->current_cadence),
-                to_string((int) shmem.data->angle_encoder), to_string(shmem.data->check_stim1),
-                to_string(shmem.data->check_stim2), to_string(shmem.data->check_pedal_left),
-                to_string(shmem.data->check_pedal_right), to_string(shmem.data->check_cardio),
-                to_string((int) shmem.data->trg_cad), to_string(shmem.data->pid_percentage),
-                to_string(shmem.data->current_percentage), to_string((int) shmem.data->theorCurrentsL[0]),
-                to_string((int) shmem.data->theorCurrentsL[1]), to_string((int) shmem.data->theorCurrentsL[2]),
-                to_string((int) shmem.data->theorCurrentsL[3]), to_string((int) shmem.data->theorCurrentsR[0]),
-                to_string((int) shmem.data->theorCurrentsR[1]), to_string((int) shmem.data->theorCurrentsR[2]),
-                to_string((int) shmem.data->theorCurrentsR[3]), to_string((int) shmem.data->heart_rate)};
-                
-                if(shmem.data->pid){
-                    payloads.push_back(to_string((int) shmem.data->trg_cad));
+                payloads = {to_string(shmem->data->start_training),
+                to_string(shmem->data->pid), to_string((int) shmem->data->current_cadence),
+                to_string((int) shmem->data->angle_encoder), to_string(shmem->data->check_stim1),
+                to_string(shmem->data->check_stim2), to_string(shmem->data->check_pedal_left),
+                to_string(shmem->data->check_pedal_right), to_string(shmem->data->check_cardio),
+                to_string((int) shmem->data->trg_cad), to_string(shmem->data->pid_percentage),
+                to_string(shmem->data->current_percentage), to_string((int) shmem->data->theorCurrentsL[0]),
+                to_string((int) shmem->data->theorCurrentsL[1]), to_string((int) shmem->data->theorCurrentsL[2]),
+                to_string((int) shmem->data->theorCurrentsL[3]), to_string((int) shmem->data->theorCurrentsR[0]),
+                to_string((int) shmem->data->theorCurrentsR[1]), to_string((int) shmem->data->theorCurrentsR[2]),
+                to_string((int) shmem->data->theorCurrentsR[3]), to_string((int) shmem->data->heart_rate),
+                to_string(shmem->data->stimulation_frequency), to_string(shmem->data->pulse_width_from_gui)};
+
+                if(shmem->data->pid){
+                    payloads.push_back(to_string((int) shmem->data->trg_cad));
                 }else{
                     payloads.push_back(
-                        to_string((int) (shmem.data->theorCurrentsL[0] > shmem.data->theorCurrentsR[0] ? shmem.data->theorCurrentsL[0] : shmem.data->theorCurrentsR[0])));
+                        to_string((int) (shmem->data->theorCurrentsL[0] > shmem->data->theorCurrentsR[0] ? shmem->data->theorCurrentsL[0] : shmem->data->theorCurrentsR[0])));
                 }
             }else{
                 types = {ANGLE_ENCODER};
-                payloads = {to_string((int) shmem.data->angle_encoder)};
+                payloads = {to_string((int) shmem->data->angle_encoder)};
 
             }
             counter_low_priority++;
@@ -129,8 +133,8 @@ void manager::threadReadFromSM(){
             }
             counter_motivational++;
 
-            /*std::cout << "start -> " << shmem.data->start_training << std::endl;
-            std::cout << "pid   -> " << shmem.data->pid << std::endl;*/
+            /*std::cout << "start -> " << shmem->data->start_training << std::endl;
+            std::cout << "pid   -> " << shmem->data->pid << std::endl;*/
 
             string xmlMessage = buildXMLMessage(types, payloads);
             // std::cout << xmlMessage << std::endl;

@@ -7,16 +7,18 @@
 #include <unistd.h>
 #include "shared_memory.h"
 #include "concurrentbtle.h"
+#include "singletonSM.h"
 
 using std::string;
 
-shared_memory shmem;
+SingletonSM* SingletonSM::instancePtr = NULL;
 
 void myInterruptHandler (int signum) {
 
     printf ("ctrl-c has been pressed. Programs will be terminated in sequence.\n");
     
-    shmem.detach_shared_memory();
+    SingletonSM* singletonSM = SingletonSM::getInstance();
+    singletonSM->detach_shared_memory();
     exit(signum);
     
 }
@@ -35,11 +37,14 @@ int main(int argc, char *argv[]){
     QBluetoothAddress address(myMAC.c_str());
     
     ChatServer* chatServer;
-    // shmem.init();
-    chatServer = new ChatServer(&shmem);
+    
+    SingletonSM* singletonSM = SingletonSM::getInstance();
+    singletonSM->init_SM();
+
+    chatServer = new ChatServer();
     chatServer->startServer(address);
     ConcurrentBtle* btle;
-    btle = new ConcurrentBtle(&shmem); 
+    btle = new ConcurrentBtle(); 
     
     signal(SIGINT, myInterruptHandler);
 
