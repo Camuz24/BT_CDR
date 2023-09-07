@@ -54,6 +54,7 @@ void manager::writeOnSM(const QString &sender, const QString &message){
         payload=field.child("payload").text().as_string();
     }
 
+// se dal tablet ricevo un messaggio con più payload, sposta if else if dentro al ciclo for che c'è sopra
     if(type=="upAndDown"){
         shmem->data->up = payload=="plus";
         shmem->data->down = payload=="minus";
@@ -153,9 +154,6 @@ void manager::startThread() {
     std::thread t(&manager::threadReadFromSM, this);
 
     // Optionally, you can detach the thread if you don't need to join it later
-    // t.detach();
-
-    // Alternatively, you can join the thread to wait for it to finish
     t.detach();
     
     }
