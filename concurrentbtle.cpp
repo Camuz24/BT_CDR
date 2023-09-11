@@ -1,57 +1,26 @@
 #include "concurrentbtle.h"
 #include <QDebug>
 #include <QTimer>
-#include <QtEndian>
 #include <iostream>
 #include <fstream>
 #include <QtCore/QtAlgorithms>
 #include <QtCore>
 #include <math.h>
 
-ofstream CSVfileL; //dato grezzo pedale sinistro ed efficiency
-ofstream CSVfileR; //dato grezzo pedale destro ed efficiency
-ofstream CSVfileC; //dato grezzo cardio
-ofstream CSVfilePL; //dato po media e smoothness sinistro
-ofstream CSVfilePR; //dato po media e smoothness destro
+ofstream CSVfileL; // Data for left pedal and efficiency
+ofstream CSVfileR; // Data for right pedal and efficiency
+ofstream CSVfileC; // Data for cardio
+ofstream CSVfilePL; // Data for left pedal's po media and smoothness
+ofstream CSVfilePR; // Data for right pedal's po media and smoothness
+
 double Angle_old_left = 0.0;
 double Angle_old_right = 0.0;
-double sumpo_right = 0.0;
-double sumpo_left = 0.0;
-int countpo_right=0;
-int countpo_left=0;
-double po_old_right=0.0;
-double po_old_left=0.0;
-double po_old_old_left=0.0;
-double po_old_old_right=0.0;
-double massimo_right=0.0;
-double massimo_left=0.0;
-bool temp_check = 0;
+double po_old_left = 0.0;
+double po_old_right = 0.0;
 double massimo = 0.0;
-
-bool ok_pleft = 0;
-bool ok_pright = 0;
-bool ok_cardio = 0;
-int hr_sconnesso = 0;
-
-double sumtf_left=0.0;
-double medciclotf_left=0.0;
-int cicli_left=0;
-double tfmean_left=0.0;
-double sumtf_right=0.0;
-double medciclotf_right=0.0;
-int cicli_right=0;
-double tfmean_right=0.0;
-
-
-double sum_force_right = 0.0;
-int count_force_right = 0;
-double sum_meanforce_right = 0.0;
-bool flag_ciclo_right = 0;
-
-double sum_force_left = 0.0;
-int count_force_left = 0;
-double sum_meanforce_left= 0.0;
-bool flag_ciclo_left = 0;
+bool ok_pleft = false;
+bool ok_pright = false;
+bool ok_cardio = false;
 
 void write_heart_rate(double hr_value){
     // std::cout << "writing HR" << std::endl;
@@ -69,7 +38,7 @@ ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
     desiredDevices << QBluetoothAddress(QStringLiteral("F0:87:17:F9:0F:03")); /*Polar H10 8E5AB228 F0:87:17:F9:0F:03*/
 
     agent = new QBluetoothDeviceDiscoveryAgent(this);
-    agent->setLowEnergyDiscoveryTimeout(10000);
+    agent->setLowEnergyDiscoveryTimeout(50000);
     connect(agent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
             this, [this](const QBluetoothDeviceInfo &info){
         // qDebug() << "Found device: " << info.address();
@@ -86,9 +55,6 @@ ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
 
     connect(agent, &QBluetoothDeviceDiscoveryAgent::finished,
             this, [this](){
-        temp_check = 1;
-        // write2temp(temp_check);
-        // qDebug() << "temp check" << temp_check;
         qDebug() << "Discovery finished";
         // add a boolean to check connection with shared memory
 
@@ -99,24 +65,22 @@ ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
             for (auto foundDevice: foundDevices) {
                 if (foundDevice.address() == desiredDevice) {
                     found = true;
+                    qDebug() << "Found required device(s)" << desiredDevices;
+                    establishConnection();
                     break;
                 }
             }
 
             if (!found) {
                 qDebug() << "Cannot find" << desiredDevice;
-                return;
             }
         }
-        qDebug() << "Found required device(s)" << desiredDevices;
-        establishConnection();
-
     });
 
     startSearch();
 
     auto timer = new QTimer(this);
-    timer->setInterval(10000);
+    timer->setInterval(50000);
     connect(timer, &QTimer::timeout, this, [this]() {
         if (agent->isActive())
             return;
@@ -154,7 +118,7 @@ void ConcurrentBtle::startSearch()
 void ConcurrentBtle::establishConnection()
 {
     if (!device3) {
-        std::cout << "establish connection" << std::endl;
+        std::cout << "establishing connection" << std::endl;
         for (int i=0;i<1;i++) {
             if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("F0:87:17:F9:0F:03")))
             device3 = new QLowEnergyController(desiredDevices.at(i));
@@ -163,7 +127,6 @@ void ConcurrentBtle::establishConnection()
         device3->setParent(this);
         connect(device3, &QLowEnergyController::connected, this, [&](){
             ok_cardio=1;
-            // write2tempcardio(ok_cardio);
 
             SingletonSM* singletonSM = SingletonSM::getInstance();
             shared_memory* shmem = singletonSM->get_SM();
@@ -175,26 +138,45 @@ void ConcurrentBtle::establishConnection()
 
         connect(device3, &QLowEnergyController::disconnected, this, [&](){
             ok_cardio=0;
-            // write2tempcardio(ok_cardio);
-            // hr_sconnesso=500;
-            // write_heart_rate(hr_sconnesso);
             SingletonSM* singletonSM = SingletonSM::getInstance();
             shared_memory* shmem = singletonSM->get_SM();
             shmem->data->check_cardio = ok_cardio;
             qDebug() << "*********** Device 3 Disconnected";
             QTimer::singleShot(10000, this, [&](){
                 qDebug() << "Reconnecting device 3";
-                device3->connectToDevice();
+                // device3->connectToDevice();
                 // device3 = nullptr;
                 SingletonSM* singletonSM = SingletonSM::getInstance();
                 shared_memory* shmem = singletonSM->get_SM();
                 shmem->data->heart_rate = 0.0;
+                startSearch();
+
+                auto timer = new QTimer(this);
+                timer->setInterval(50000);
+                connect(timer, &QTimer::timeout, this, [this]() {
+                    if (agent->isActive())
+                        return;
+                    if (!device3)
+                        establishConnection();
+                });
+                timer->start();
             });
         });
 
         connect(device3, &QLowEnergyController::discoveryFinished, this, [&](){
            qDebug() <<  "*********** Device 3 discovery finished";
            setupNotificationCardio(device3, QStringLiteral("Device 3"));
+           startSearch();
+
+                auto timer = new QTimer(this);
+                timer->setInterval(50000);
+                connect(timer, &QTimer::timeout, this, [this]() {
+                    if (agent->isActive())
+                        return;
+                    if (!device3)
+                        establishConnection();
+                });
+                timer->start();
         });
 
         device3->connectToDevice();
