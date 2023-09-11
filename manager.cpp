@@ -1,6 +1,10 @@
 #include "manager.h"
 #include <iostream>
+#include <fstream>
 #include <string>
+#include <sstream>
+#include <algorithm>
+#include <dirent.h>
 #include <vector>
 #include <unistd.h> 
 #include <thread>
@@ -12,6 +16,7 @@
 using namespace pugi;
 using std::string;
 using std::to_string;
+
 
 manager::manager()
 {
@@ -72,6 +77,56 @@ void manager::writeOnSM(const QString &sender, const QString &message){
             //TODO
         }else if(type=="calibrationRightLeft"){
             //TODO
+        }else if(type=="request"){
+            if(payload== "users"){
+                std::string directory = "../../data/"; //TODO: change here accordingly of where the executable file will be!!!
+                std::string fileNames;
+                std::string extension = ".json";
+
+                DIR* dir;
+                struct dirent* ent;
+
+                if ((dir = opendir(directory.c_str())) != nullptr) {
+                    while ((ent = readdir(dir)) != nullptr) {
+                        std::string fileName = ent->d_name;
+                        size_t dotPos = fileName.find_last_of('.');
+                        if (dotPos != std::string::npos) {
+                            std::string extension = fileName.substr(dotPos);
+                            if (extension == ".json") {
+                                // Extract the file name without extension
+                                std::string nameWithoutExtension = fileName.substr(0, dotPos);
+
+                                if (!fileNames.empty()) {
+                                    fileNames += ",";
+                                }
+                                fileNames += nameWithoutExtension;
+                            }
+                        }
+                    }
+                    closedir(dir);
+                    std::cout << "JSON Files in " << directory << ": " << fileNames << std::endl;
+                    std::vector<string> types;
+                    std::vector<string> payloads;
+                    types={"request"};
+                    payloads={fileNames};
+                    string xmlMessage = buildXMLMessage(types, payloads);
+                    emit sendToClient(QString::fromStdString(xmlMessage));
+                } else {
+                    std::cout << "Error opening directory " << directory << std::endl;
+                }
+            }else{
+                std::fstream userFile;
+                userFile.open(payload, std::ios::in);
+                if(!userFile){
+                    std::cout << "Requested inextistent file " << payload << std::endl;
+                }else{
+                    std::ifstream t(payload);
+                    std::stringstream buffer;
+                    buffer << t.rdbuf();
+                    // send message as buffer.str()
+                }
+            }
+            
         }
     }
     
@@ -98,7 +153,6 @@ void manager::threadReadFromSM(){
     usleep(1 * 1e6);
     while(!stopThread){
 
-        //TODO: startAndStop not ok to send to tablet! Need something like training ongoing
         if(!stopSend){
             
             if(counter_low_priority == wait_cycles){
@@ -150,8 +204,6 @@ void manager::threadReadFromSM(){
             std::cout << "pid   -> " << shmem->data->pid << std::endl;*/
 
             string xmlMessage = buildXMLMessage(types, payloads);
-            // std::cout << xmlMessage << std::endl;
-            //emit sendToClient(QString::fromStdString(""));
             emit sendToClient(QString::fromStdString(xmlMessage));
         }
         usleep((int) (1.0/hz_high_priority * 1e6));

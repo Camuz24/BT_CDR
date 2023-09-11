@@ -8,6 +8,8 @@
 #include <signal.h>
 #include "singletonSM.h"
 using std::string;
+
+#define MAX_LENGTH 1024
 // #pragma once
 QT_USE_NAMESPACE
 
