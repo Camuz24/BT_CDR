@@ -45,24 +45,36 @@ void manager::writeOnSM(const QString &sender, const QString &message){
         return;
     }
 
+    std::cout << "Received message: " << std::endl;
     for(auto&& field: docString.children("message")){
-        std::cout << "Received message: " << std::endl;
         std::cout << "\tType: \t\t" << field.child("type").text().as_string() << std::endl;
         std::cout << "\tPayload: \t" << field.child("payload").text().as_string() << std::endl;
          
         type=field.child("type").text().as_string();
         payload=field.child("payload").text().as_string();
-    }
 
-// se dal tablet ricevo un messaggio con più payload, sposta if else if dentro al ciclo for che c'è sopra
-    if(type=="upAndDown"){
-        shmem->data->up = payload=="plus";
-        shmem->data->down = payload=="minus";
-    }else if(type=="startAndStop"){
-        shmem->data->start_training = payload=="start";
-    }else if(type=="pid"){
-        shmem->data->pid=payload=="1";
+        if(type=="upAndDown"){
+            shmem->data->up = payload=="plus";
+            shmem->data->down = payload=="minus";
+        }else if(type=="startAndStop"){
+            shmem->data->start_training = payload=="start";
+        }else if(type=="pid"){
+            shmem->data->pid=payload=="1";
+        }else if(type=="calibrationCurrent"){
+            //TODO
+        }else if(type=="calibrationFrequency"){
+            //TODO
+        }else if(type=="calibrationPulseWidth"){
+            //TODO
+        }else if(type=="calibrationMuscle"){
+            //TODO
+        }else if(type=="calibrationStartAndStop"){
+            //TODO
+        }else if(type=="calibrationRightLeft"){
+            //TODO
+        }
     }
+    
     stopSend = false;
     std::cout << "start send" << std::endl;
 }
