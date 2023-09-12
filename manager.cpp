@@ -32,8 +32,6 @@ manager::~manager()
 
 
 void manager::writeOnSM(const QString &sender, const QString &message){
-    //std::cout << message.toStdString() << std::endl;
-    //TODO: if else if ... per scrivere su shared memory
     stopSend = true;
     std::cout << "stop send" << std::endl;
     xml_document docString;
@@ -136,6 +134,7 @@ void manager::writeOnSM(const QString &sender, const QString &message){
     stopSend = false;
     std::cout << "start send" << std::endl;
 }
+
 /**
  * Read periodically from shared memory and send message to client view
 */
@@ -203,9 +202,6 @@ void manager::threadReadFromSM(){
             }
             counter_motivational++;
 
-            /*std::cout << "start -> " << shmem->data->start_training << std::endl;
-            std::cout << "pid   -> " << shmem->data->pid << std::endl;*/
-
             string xmlMessage = buildXMLMessage(types, payloads);
             emit sendToClient(QString::fromStdString(xmlMessage));
         }
@@ -233,10 +229,8 @@ string manager::buildXMLMessage(const std::vector<string>& types, const std::vec
 
     std::string XMLmsg = "<m>";
     for (size_t i = 0; i < types.size(); ++i) {
-        // XMLmsg += "  <message>\n";
         XMLmsg += "<t>" + types[i] + "</t>";
         XMLmsg += "<p>" + payloads[i] + "</p>";
-        // XMLmsg += "  </message>\n";
     }
     XMLmsg += "</m>";
 
