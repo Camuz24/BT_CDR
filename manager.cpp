@@ -78,10 +78,10 @@ void manager::writeOnSM(const QString &sender, const QString &message){
         }else if(type=="calibrationRightLeft"){
             //TODO
         }else if(type=="request"){
+            std::string directory = "../../data/"; //TODO: change here accordingly of where the executable file will be!!!
+            std::string extension = ".json";
             if(payload== "users"){
-                std::string directory = "../../data/"; //TODO: change here accordingly of where the executable file will be!!!
                 std::string fileNames;
-                std::string extension = ".json";
 
                 DIR* dir;
                 struct dirent* ent;
@@ -116,20 +116,23 @@ void manager::writeOnSM(const QString &sender, const QString &message){
                 }
             }else{
                 std::fstream userFile;
-                userFile.open(payload, std::ios::in);
+                userFile.open(directory + payload + extension, std::ios::in);
                 if(!userFile){
                     std::cout << "Requested inextistent file " << payload << std::endl;
                 }else{
-                    std::ifstream t(payload);
+                    std::ifstream t(directory + payload + extension);
                     std::stringstream buffer;
                     buffer << t.rdbuf();
-                    // send message as buffer.str()
+                    std::vector<string> types;
+                    std::vector<string> payloads;
+                    types={"request"};
+                    payloads={buffer.str()};
+                    string xmlMessage = buildXMLMessage(types, payloads);
+                    emit sendToClient(QString::fromStdString(xmlMessage));
                 }
             }
-            
         }
     }
-    
     stopSend = false;
     std::cout << "start send" << std::endl;
 }
