@@ -59,6 +59,7 @@ ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
 
             if (!found) {
                 qDebug() << "Cannot find" << desiredDevice;
+                startSearch();
             }
         }
     });
