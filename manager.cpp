@@ -93,7 +93,7 @@ void manager::writeOnSM(const QString &sender, const QString &message){
             //TODO
         }else if(type=="calibrationMuscle"){
             //TODO
-        }else if(type=="calibrationStartAndStop"){
+        }else if(type=="calibrationStartAndStop"){ //TODO: do we need another StartAndStop for calibration???
             shmem->data->start_training = payload=="start";
         }else if(type=="calibrationRightLeft"){
             //TODO
