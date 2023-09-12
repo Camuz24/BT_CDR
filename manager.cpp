@@ -34,8 +34,9 @@ manager::~manager()
 void manager::writeOnSM(const QString &sender, const QString &message){
     stopSend = true;
     std::cout << "stop send" << std::endl;
-    xml_document docString;
-    xml_parse_result parsedMessage = docString.load(message.toStdString().c_str());
+    std::cout << message.toStdString().c_str() << std::endl;
+    xml_document doc;
+    xml_parse_result parsedMessage = doc.load_string(message.toStdString().c_str());
     string type;
     string payload;
 
@@ -44,18 +45,39 @@ void manager::writeOnSM(const QString &sender, const QString &message){
 
     if(!parsedMessage){
         //TODO: send message to client telling that message is not parseable
-        std::cout << "return";
+        std::cout << "Parsing error";
         return;
     }
 
     std::cout << "Received message: " << std::endl;
-    for(auto&& field: docString.children("message")){
-        std::cout << "\tType: \t\t" << field.child("type").text().as_string() << std::endl;
-        std::cout << "\tPayload: \t" << field.child("payload").text().as_string() << std::endl;
-         
-        type=field.child("type").text().as_string();
-        payload=field.child("payload").text().as_string();
+    xml_node tools = doc.child("message");
 
+    for (xml_node_iterator it = tools.begin(); it != tools.end(); ++it){
+        for (xml_attribute_iterator ait = it->attributes_begin();
+                ait != it->attributes_end(); ++ait){
+
+            //std::cout << " " << ait->name() << "=" << ait->value();
+
+            std::stringstream ssName;
+            ssName << ait->name();
+            std::string strName = ssName.str();
+
+            std::stringstream ssValue;
+            ssValue << ait->value();
+            std::string strValue = ssValue.str();
+
+            if(strName == "type"){
+                type=strValue;
+            }
+            if(strName == "payload"){
+                payload=strValue;
+            }
+        }
+
+        //std::cout << std::endl;
+
+        std::cout << "\tType: \t\t" << type << std::endl;
+        std::cout << "\tPayload: \t" << payload << std::endl;
         if(type=="upAndDown"){
             shmem->data->up = payload=="plus";
             shmem->data->down = payload=="minus";
@@ -72,7 +94,7 @@ void manager::writeOnSM(const QString &sender, const QString &message){
         }else if(type=="calibrationMuscle"){
             //TODO
         }else if(type=="calibrationStartAndStop"){
-            //TODO
+            shmem->data->start_training = payload=="start";
         }else if(type=="calibrationRightLeft"){
             //TODO
         }else if(type=="request"){
