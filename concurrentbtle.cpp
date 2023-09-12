@@ -7,19 +7,6 @@
 #include <QtCore>
 #include <math.h>
 
-ofstream CSVfileL; // Data for left pedal and efficiency
-ofstream CSVfileR; // Data for right pedal and efficiency
-ofstream CSVfileC; // Data for cardio
-ofstream CSVfilePL; // Data for left pedal's po media and smoothness
-ofstream CSVfilePR; // Data for right pedal's po media and smoothness
-
-double Angle_old_left = 0.0;
-double Angle_old_right = 0.0;
-double po_old_left = 0.0;
-double po_old_right = 0.0;
-double massimo = 0.0;
-bool ok_pleft = false;
-bool ok_pright = false;
 bool ok_cardio = false;
 
 void write_heart_rate(double hr_value){
@@ -38,7 +25,7 @@ ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
     desiredDevices << QBluetoothAddress(QStringLiteral("F0:87:17:F9:0F:03")); /*Polar H10 8E5AB228 F0:87:17:F9:0F:03*/
 
     agent = new QBluetoothDeviceDiscoveryAgent(this);
-    agent->setLowEnergyDiscoveryTimeout(50000);
+    agent->setLowEnergyDiscoveryTimeout(20000);
     connect(agent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
             this, [this](const QBluetoothDeviceInfo &info){
         // qDebug() << "Found device: " << info.address();
@@ -56,7 +43,6 @@ ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
     connect(agent, &QBluetoothDeviceDiscoveryAgent::finished,
             this, [this](){
         qDebug() << "Discovery finished";
-        // add a boolean to check connection with shared memory
 
         for (auto desiredDevice: qAsConst(desiredDevices)) {
 
@@ -76,32 +62,11 @@ ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
             }
         }
     });
-
+    
+    reconnectTimer = new QTimer(this);
+    reconnectTimer->setInterval(5000); // Adjust the interval as needed (e.g., 5 seconds)
+    connect(reconnectTimer, &QTimer::timeout, this, &ConcurrentBtle::reconnectDevice3);
     startSearch();
-
-    auto timer = new QTimer(this);
-    timer->setInterval(50000);
-    connect(timer, &QTimer::timeout, this, [this]() {
-        if (agent->isActive())
-            return;
-        if (!device3)
-            establishConnection();
-    });
-    timer->start();
-}
-
-double findmax (double p_o, double p_o_o, double p){
-
-    if((p<p_o)&&(p_o_o<p_o)){
-        if (p_o>massimo){
-        massimo=p_o; //solo se mi trovo in questa condizione altrimento max resta quello che ho già
-             }
-    else {
-        massimo=massimo;
-    }
-    }
-   return massimo;
-
 }
 
 void ConcurrentBtle::startSearch()
@@ -119,10 +84,10 @@ void ConcurrentBtle::establishConnection()
 {
     if (!device3) {
         std::cout << "establishing connection" << std::endl;
-        for (int i=0;i<1;i++) {
-            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("F0:87:17:F9:0F:03")))
-            device3 = new QLowEnergyController(desiredDevices.at(i));
-        }
+        
+        if (desiredDevices.at(0)==QBluetoothAddress(QStringLiteral("F0:87:17:F9:0F:03")))
+        device3 = new QLowEnergyController(desiredDevices.at(0));
+        
         
         device3->setParent(this);
         connect(device3, &QLowEnergyController::connected, this, [&](){
@@ -134,50 +99,58 @@ void ConcurrentBtle::establishConnection()
 
             qDebug() << "*********** Device 3 Polar H10 connected" << device3->remoteAddress();
             device3->discoverServices();
+            reconnectTimer->stop();
         });
 
         connect(device3, &QLowEnergyController::disconnected, this, [&](){
-            ok_cardio=0;
-            SingletonSM* singletonSM = SingletonSM::getInstance();
-            shared_memory* shmem = singletonSM->get_SM();
-            shmem->data->check_cardio = ok_cardio;
-            qDebug() << "*********** Device 3 Disconnected";
-            QTimer::singleShot(10000, this, [&](){
-                qDebug() << "Reconnecting device 3";
-                // device3->connectToDevice();
-                // device3 = nullptr;
-                SingletonSM* singletonSM = SingletonSM::getInstance();
-                shared_memory* shmem = singletonSM->get_SM();
-                shmem->data->heart_rate = 0.0;
-                startSearch();
-
-                auto timer = new QTimer(this);
-                timer->setInterval(50000);
-                connect(timer, &QTimer::timeout, this, [this]() {
-                    if (agent->isActive())
-                        return;
-                    if (!device3)
-                        establishConnection();
-                });
-                timer->start();
-            });
+            handleDeviceDisconnection();
         });
 
         connect(device3, &QLowEnergyController::discoveryFinished, this, [&](){
            qDebug() <<  "*********** Device 3 discovery finished";
            setupNotificationCardio(device3, QStringLiteral("Device 3"));
-           startSearch();
-
-                auto timer = new QTimer(this);
-                timer->setInterval(50000);
-                connect(timer, &QTimer::timeout, this, [this]() {
-                    if (agent->isActive())
-                        return;
-                    if (!device3)
-                        establishConnection();
-                });
-                timer->start();
         });
+
+        device3->connectToDevice();
+    }
+}
+
+void ConcurrentBtle::handleDeviceDisconnection()
+{
+    qDebug() << "Device 3 disconnected";
+    ok_cardio = false;
+    SingletonSM* singletonSM = SingletonSM::getInstance();
+    shared_memory* shmem = singletonSM->get_SM();
+    shmem->data->check_cardio = ok_cardio;
+
+    // Start the reconnect timer after a disconnection event
+    reconnectTimer->start();
+}
+
+void ConcurrentBtle::reconnectDevice3()
+{
+    qDebug() << "Attempting to reconnect Device 3...";
+    if (device3)
+    {
+        device3->disconnectFromDevice(); // Ensure the device is disconnected first
+        device3->connectToDevice();
+    }
+    else
+    {
+        // If device3 is not initialized, create a new instance and connect
+        device3 = new QLowEnergyController(desiredDevices.at(0));
+        connect(device3, &QLowEnergyController::connected, this, [&](){
+            ok_cardio = true;
+            SingletonSM* singletonSM = SingletonSM::getInstance();
+            shared_memory* shmem = singletonSM->get_SM();
+            shmem->data->check_cardio = ok_cardio;
+
+            qDebug() << "*********** Device 3 Polar H10 connected" << device3->remoteAddress();
+            device3->discoverServices();
+            reconnectTimer->stop();
+        });
+
+        connect(device3, &QLowEnergyController::disconnected, this, &ConcurrentBtle::handleDeviceDisconnection);
 
         device3->connectToDevice();
     }
@@ -232,7 +205,6 @@ void ConcurrentBtle::setupNotificationCardio(QLowEnergyController *device, const
 
         quint8 flags = data[0];
 
-
         //HR 8bit
         quint8 *heartrate= (quint8 *) &data[1];
         // qDebug() << "HR value" << name << *heartrate <<"bpm" ;
@@ -240,6 +212,6 @@ void ConcurrentBtle::setupNotificationCardio(QLowEnergyController *device, const
         write_heart_rate(hr_value);
 
     });
-   service->discoverDetails();
+    service->discoverDetails();
 }
 
