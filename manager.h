@@ -23,7 +23,7 @@ public:
     void threadReadFromSM();
     void startThread();
     bool stopThread;
-    
+    string fileName;
 
 public slots:
     void writeOnSM(const QString &sender, const QString &message);

@@ -88,7 +88,11 @@ void manager::writeOnSM(const QString &sender, const QString &message){
             shmem->data->pid=payload=="1";
         }else if(type=="calibrationStartAndStop"){ //TODO: do we need another StartAndStop for calibration???
             shmem->data->start_training = payload=="start";
-        }else if(type=="startTraining"){
+        }
+        else if(type == "fileName"){
+            fileName = payload;
+        }
+        else if(type=="startTraining"){
             std::string json_directory = "../../data/"; //TODO: change here accordingly of where the executable file will be!!!
             DIR *directory;
             struct dirent *entry;
@@ -100,7 +104,7 @@ void manager::writeOnSM(const QString &sender, const QString &message){
                 return;
             }
             
-            const char *filenameToFind = "feslegXX.json";  // Change to the desired filename
+            const char *filenameToFind = fileName.c_str();  // Change to the desired filename
             
             // Flag to track whether the file was found
             bool fileFound = false;
