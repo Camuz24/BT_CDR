@@ -8,6 +8,7 @@
 #include <vector>
 #include <unistd.h> 
 #include <thread>
+#include <cstring>
 #include "messageTypeDefinitions.h"
 #include <cstdlib> // for std::rand() and std::srand()
 #include <ctime>   // for std::time()
@@ -45,7 +46,7 @@ void manager::writeOnSM(const QString &sender, const QString &message){
 
     if(!parsedMessage){
         //TODO: send message to client telling that message is not parseable
-        std::cout << "Parsing error";
+        std::cout << "Parsing error"<<std::endl;
         return;
     }
 
@@ -85,19 +86,59 @@ void manager::writeOnSM(const QString &sender, const QString &message){
             shmem->data->start_training = payload=="start";
         }else if(type=="pid"){
             shmem->data->pid=payload=="1";
-        }else if(type=="calibrationCurrent"){
-            //TODO
-        }else if(type=="calibrationFrequency"){
-            //TODO
-        }else if(type=="calibrationPulseWidth"){
-            //TODO
-        }else if(type=="calibrationMuscle"){
-            //TODO
         }else if(type=="calibrationStartAndStop"){ //TODO: do we need another StartAndStop for calibration???
             shmem->data->start_training = payload=="start";
-        }else if(type=="calibrationRightLeft"){
-            //TODO
-        }else if(type=="request"){
+        }else if(type=="startTraining"){
+            std::string json_directory = "../../data/"; //TODO: change here accordingly of where the executable file will be!!!
+            DIR *directory;
+            struct dirent *entry;
+            
+            // Open the directory containing the file
+            directory = opendir(json_directory.c_str());
+            if (directory == nullptr) {
+                std::cout << "Error opening directory." << std::endl;
+                return;
+            }
+            
+            const char *filenameToFind = "feslegXX.json";  // Change to the desired filename
+            
+            // Flag to track whether the file was found
+            bool fileFound = false;
+
+            // Iterate through directory entries
+            
+            while ((entry = readdir(directory))) {
+                if (std::strcmp(entry->d_name, filenameToFind) == 0) {
+                    // Found the file you're looking for
+                    fileFound = true;
+                    std::ofstream file(json_directory+filenameToFind, std::ios::out | std::ios::trunc);
+                    if (file.is_open()) {
+                        // Write new data to the file (overwriting existing content)
+                        file << payload;
+                        file.close();
+                        std::cout << "File overwritten: " << filenameToFind << std::endl;
+                    } else {
+                        std::cout << "Error opening file: " << filenameToFind << std::endl;
+                    }
+                }
+            }
+            
+            if (!fileFound) {
+                // File not found, create a new one and write data to it
+                std::ofstream newFile(json_directory+filenameToFind, std::ios::out | std::ios::trunc);
+                if (newFile.is_open()) {
+                    newFile << payload;
+                    newFile.close();
+                    std::cout << "Created a new file and wrote data: " << filenameToFind << std::endl;
+                } else {
+                    std::cout << "Error creating a new file: " << filenameToFind << std::endl;
+                }
+            }
+
+            closedir(directory);
+
+        }
+        else if(type=="request"){
             std::string directory = "../../data/"; //TODO: change here accordingly of where the executable file will be!!!
             std::string extension = ".json";
             if(payload== "users"){

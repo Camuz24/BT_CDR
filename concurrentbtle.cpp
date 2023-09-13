@@ -22,7 +22,7 @@ void write_heart_rate(double hr_value){
 // code to initialize btle function
 ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
 {
-    desiredDevices << QBluetoothAddress(QStringLiteral("F0:87:17:F9:0F:03")); /*Polar H10 8E5AB228 F0:87:17:F9:0F:03*/
+    desiredDevices << QBluetoothAddress(QStringLiteral("D8:A2:FC:58:9F:A4")); /*Polar H10 8E5AB228 F0:87:17:F9:0F:03*/
 
     agent = new QBluetoothDeviceDiscoveryAgent(this);
     agent->setLowEnergyDiscoveryTimeout(20000);
@@ -86,7 +86,7 @@ void ConcurrentBtle::establishConnection()
     if (!device3) {
         std::cout << "establishing connection" << std::endl;
         
-        if (desiredDevices.at(0)==QBluetoothAddress(QStringLiteral("F0:87:17:F9:0F:03")))
+        if (desiredDevices.at(0)==QBluetoothAddress(QStringLiteral("D8:A2:FC:58:9F:A4")))
         device3 = new QLowEnergyController(desiredDevices.at(0));
         
         
