@@ -87,7 +87,7 @@ void manager::writeOnSM(const QString &sender, const QString &message){
         }else if(type=="pid"){
             shmem->data->pid=payload=="1";
         }else if(type=="calibrationStartAndStop"){ //TODO: do we need another StartAndStop for calibration???
-            shmem->data->start_training = payload=="start";
+            //shmem->data-> = payload=="start";
         }
         else if(type == "fileName"){
             fileName = payload;
