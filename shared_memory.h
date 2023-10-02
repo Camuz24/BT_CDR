@@ -39,7 +39,7 @@ class shared_memory
         double radial_force_right = 0.0;
         double radial_force_left = 0.0;
 
-        // Istantaneous power
+        // Istantaneous power over one cycle
         double power_left = 0.0;
         double power_right = 0.0;
 

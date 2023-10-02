@@ -70,9 +70,23 @@ void write_heart_rate(double hr_value){
     SingletonSM* singletonSM = SingletonSM::getInstance();
     shared_memory* shmem = singletonSM->get_SM();
 
-    shmem->data->heart_rate=hr_value;
+    shmem->data->heart_rate = hr_value;
 }
 
+void write_left_power(qint16 inst_left_power){
+
+    SingletonSM* singletonSM = SingletonSM::getInstance();
+    shared_memory* shmem = singletonSM->get_SM();
+
+    shmem->data->power_left = inst_left_power;
+}
+void write_right_power(qint16 inst_right_power){
+
+    SingletonSM* singletonSM = SingletonSM::getInstance();
+    shared_memory* shmem = singletonSM->get_SM();
+
+    shmem->data->power_right = inst_right_power;
+}
 
 // code to initialize btle function
 ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
@@ -199,9 +213,13 @@ void ConcurrentBtle::establishConnection()
         }
         device1->setParent(this);
         connect(device1, &QLowEnergyController::connected, this, [&](){
-            ok_pleft=1;
+            ok_pleft = true;
             disconnected1 = false;
-            //write2temppedalleft(ok_pleft);
+
+            SingletonSM* singletonSM = SingletonSM::getInstance();
+            shared_memory* shmem = singletonSM->get_SM();
+            shmem->data->check_pedal_left = ok_pleft;
+
             qDebug() << "*********** Device 1 SRM_XP_L_1818 connected" << device1->remoteAddress();
             device1->discoverServices();
             reconnectTimer1->stop();
@@ -211,6 +229,11 @@ void ConcurrentBtle::establishConnection()
             disconnected1 = true;
             qDebug() << "Device 1 disconnected";
             ok_pleft = false;
+
+            SingletonSM* singletonSM = SingletonSM::getInstance();
+            shared_memory* shmem = singletonSM->get_SM();
+            shmem->data->check_pedal_left = ok_pleft;
+
             reconnectTimer1->start();
         });
 
@@ -235,7 +258,11 @@ void ConcurrentBtle::establishConnection()
         connect(device2, &QLowEnergyController::connected, this, [&](){
             ok_pright=1;
             disconnected2 = false;
-            //write2temppedalright(ok_pright);
+
+            SingletonSM* singletonSM = SingletonSM::getInstance();
+            shared_memory* shmem = singletonSM->get_SM();
+            shmem->data->check_pedal_right = ok_pright;
+
             qDebug() << "*********** Device 2 SRM_XP_R_1968 connected" << device2->remoteAddress();
             device2->discoverServices();
             reconnectTimer2->stop();
@@ -245,6 +272,11 @@ void ConcurrentBtle::establishConnection()
             disconnected2 = true;
             qDebug() << "Device 2 disconnected";
             ok_pright = false;
+
+            SingletonSM* singletonSM = SingletonSM::getInstance();
+            shared_memory* shmem = singletonSM->get_SM();
+            shmem->data->check_pedal_right = ok_pright;
+
             reconnectTimer2->start();
         });
 
@@ -266,9 +298,8 @@ void ConcurrentBtle::establishConnection()
         
         device3->setParent(this);
         connect(device3, &QLowEnergyController::connected, this, [&](){
-            ok_cardio=1;
+            ok_cardio = 1;
             disconnected3 = false;
-            // write2tempcardio(ok_cardio);
 
             SingletonSM* singletonSM = SingletonSM::getInstance();
             shared_memory* shmem = singletonSM->get_SM();
@@ -280,14 +311,13 @@ void ConcurrentBtle::establishConnection()
         });
 
         connect(device3, &QLowEnergyController::disconnected, this, [&](){
-            ok_cardio=0;
+            ok_cardio = 0;
             disconnected3 = true;
-            // write2tempcardio(ok_cardio);
-            // hr_sconnesso=500;
-            // write_heart_rate(hr_sconnesso);
+
             SingletonSM* singletonSM = SingletonSM::getInstance();
             shared_memory* shmem = singletonSM->get_SM();
             shmem->data->check_cardio = ok_cardio;
+
             qDebug() << "Device 3 Disconnected";
 
             reconnectTimer3->start();
@@ -327,9 +357,10 @@ void ConcurrentBtle::reconnectDevice()
             connect(device1, &QLowEnergyController::connected, this, [&](){
                 ok_pleft = true;
                 disconnected1 = false;
-                /* SingletonSM* singletonSM = SingletonSM::getInstance();
+
+                SingletonSM* singletonSM = SingletonSM::getInstance();
                 shared_memory* shmem = singletonSM->get_SM();
-                shmem->data->check_cardio = ok_cardio; */
+                shmem->data->check_pedal_left = ok_pleft;
 
                 qDebug() << "*********** Device 1 Left Pedal connected" << device1->remoteAddress();
                 device1->discoverServices();
@@ -340,6 +371,11 @@ void ConcurrentBtle::reconnectDevice()
                 qDebug() << "Device 1 disconnected";
                 ok_pleft = false;
                 disconnected1 = true;
+
+                SingletonSM* singletonSM = SingletonSM::getInstance();
+                shared_memory* shmem = singletonSM->get_SM();
+                shmem->data->check_pedal_left = ok_pleft;
+
                 reconnectTimer1->start();
             });
 
@@ -363,9 +399,9 @@ void ConcurrentBtle::reconnectDevice()
                 ok_pright = true;
                 disconnected2 = false;
 
-                /* SingletonSM* singletonSM = SingletonSM::getInstance();
+                SingletonSM* singletonSM = SingletonSM::getInstance();
                 shared_memory* shmem = singletonSM->get_SM();
-                shmem->data->check_cardio = ok_cardio; */
+                shmem->data->check_pedal_right = ok_pright;
 
                 qDebug() << "*********** Device 2 Right Pedal connected" << device2->remoteAddress();
                 device2->discoverServices();
@@ -375,6 +411,11 @@ void ConcurrentBtle::reconnectDevice()
             connect(device2, &QLowEnergyController::disconnected, this, [&](){
                 qDebug() << "Device 2 disconnected";
                 ok_pright = false;
+
+                SingletonSM* singletonSM = SingletonSM::getInstance();
+                shared_memory* shmem = singletonSM->get_SM();
+                shmem->data->check_pedal_right = ok_pright;
+
                 disconnected2 = true;
                 reconnectTimer2->start();
             });
@@ -413,6 +454,11 @@ void ConcurrentBtle::reconnectDevice()
                 qDebug() << "Device 3 disconnected";
                 ok_cardio = false;
                 disconnected3 = true;
+
+                SingletonSM* singletonSM = SingletonSM::getInstance();
+                shared_memory* shmem = singletonSM->get_SM();
+                shmem->data->check_cardio = ok_cardio;
+
                 reconnectTimer3->start();
             });
 
@@ -502,6 +548,7 @@ void ConcurrentBtle::getLeftPower(const QLowEnergyCharacteristic &characteristic
         leftPowerVector.push_back(instantaneousLeftPower);
         num_left_data++;
         qDebug() << "Instantaneous Left Power:" << instantaneousLeftPower << "W";
+        write_left_power(instantaneousLeftPower);
 
     if (num_left_data >= NUM_CYCLES) {
         leftSumPowerVector = 0;
@@ -605,6 +652,7 @@ void ConcurrentBtle::getRightPower(const QLowEnergyCharacteristic &characteristi
     rightPowerVector.push_back(instantaneousRightPower);
     num_right_data++;
     qDebug() << "Instantaneous Right Power:" << instantaneousRightPower << "W";
+    write_right_power(instantaneousRightPower);
 
     if (num_right_data >= NUM_CYCLES) {
         rightSumPowerVector = 0;
@@ -698,7 +746,7 @@ void ConcurrentBtle::setupNotificationCardio(QLowEnergyController *device, const
         //HR 8bit
         quint8 *heartrate= (quint8 *) &data[1];
         qDebug() << "HR value" << name << *heartrate <<"bpm" ;
-        double hr_value=*heartrate;
+        double hr_value = *heartrate;
         write_heart_rate(hr_value);
         writeFileCardio(hr_value);
 
