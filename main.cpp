@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include "shared_memory.h"
 #include "concurrentbtle.h"
+#include "blePedals.h"
 #include "singletonSM.h"
 
 using std::string;
@@ -45,6 +46,9 @@ int main(int argc, char *argv[]){
     chatServer->startServer(address);
     ConcurrentBtle* btle;
     btle = new ConcurrentBtle(); 
+
+    //blePedals* blePed;
+    //blePed = new blePedals();
 
     //TODO: crea due classi separate per polar e pedale sinistro
     
