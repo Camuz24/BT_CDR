@@ -45,6 +45,8 @@ int main(int argc, char *argv[]){
     chatServer->startServer(address);
     ConcurrentBtle* btle;
     btle = new ConcurrentBtle(); 
+
+    //TODO: crea due classi separate per polar e pedale sinistro
     
     signal(SIGINT, myInterruptHandler);
 

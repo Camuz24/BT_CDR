@@ -98,7 +98,7 @@ ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
     desiredDevices << QBluetoothAddress(QStringLiteral("C8:75:75:F8:F1:FA")); /*Polar H10 8E5AB228*/
 
     agent = new QBluetoothDeviceDiscoveryAgent(this);
-    agent->setLowEnergyDiscoveryTimeout(8000);
+    agent->setLowEnergyDiscoveryTimeout(20000);
     connect(agent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
             this, [this](const QBluetoothDeviceInfo &info){
         // qDebug() << "Found device: " << info.address();
@@ -132,14 +132,14 @@ ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
                     // desiredDevicesFound.append(foundDevice.address());
                     found = true;
                     num_des_dev_found++;
-                    break;
+                    //break;
                 }
             }
 
             if (!found) {
                 qDebug() << "Cannot find" << desiredDevice;
                 startSearch();
-                //break;
+                break;
             }
         }
         if(num_des_dev_found == 0)
@@ -156,15 +156,15 @@ ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
     });
 
     reconnectTimer1 = new QTimer(this);
-    reconnectTimer1->setInterval(2000); // Adjust the interval as needed (e.g., 5 seconds)
+    reconnectTimer1->setInterval(5000); // Adjust the interval as needed (e.g., 5 seconds)
     connect(reconnectTimer1, &QTimer::timeout, this, &ConcurrentBtle::reconnectDevice);
 
     reconnectTimer2 = new QTimer(this);
-    reconnectTimer2->setInterval(2000); // Adjust the interval as needed (e.g., 5 seconds)
+    reconnectTimer2->setInterval(5000); // Adjust the interval as needed (e.g., 5 seconds)
     connect(reconnectTimer2, &QTimer::timeout, this, &ConcurrentBtle::reconnectDevice);
 
     reconnectTimer3 = new QTimer(this);
-    reconnectTimer3->setInterval(2000); // Adjust the interval as needed (e.g., 5 seconds)
+    reconnectTimer3->setInterval(5000); // Adjust the interval as needed (e.g., 5 seconds)
     connect(reconnectTimer3, &QTimer::timeout, this, &ConcurrentBtle::reconnectDevice);
 
     startSearch();

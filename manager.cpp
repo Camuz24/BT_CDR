@@ -62,6 +62,7 @@ void manager::writeOnSM(const QString &sender, const QString &message){
     }else if(type=="pid"){
         shmem->data->pid=payload=="1";
     }
+    
     stopSend = false;
     std::cout << "start send" << std::endl;
 }
@@ -141,6 +142,7 @@ void manager::threadReadFromSM(){
             // std::cout << xmlMessage << std::endl;
             //emit sendToClient(QString::fromStdString(""));
             emit sendToClient(QString::fromStdString(xmlMessage));
+
         }
         usleep((int) (1.0/hz_high_priority * 1e6));
     }
