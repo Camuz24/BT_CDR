@@ -29,6 +29,8 @@ public:
     int num_right_data;
     qint16 instantaneousLeftPower;
     qint16 instantaneousRightPower;
+    bool newLeftData = false;
+    bool newRightData = false;
 
 signals:
 

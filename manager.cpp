@@ -61,6 +61,8 @@ void manager::writeOnSM(const QString &sender, const QString &message){
         shmem->data->start_training = payload=="start";
     }else if(type=="pid"){
         shmem->data->pid=payload=="1";
+    }else if(type == "gear"){
+        shmem->data->gear = stoi(payload);
     }
     
     stopSend = false;
@@ -98,7 +100,7 @@ void manager::threadReadFromSM(){
                 QUAD_L, GLU_L, HAM_L, GAS_L,
                 QUAD_R, GLU_R, HAM_R, GAS_R,
                 HEART_RATE, STIMULATOR_FREQUENCY, STIMULATOR_PULSEWIDTH, 
-                LEFT_POWER, RIGHT_POWER, CURRENT_OR_TARGET};       // lasciare CURRENT_OR_TARGET come ultimo valore!!!
+                LEFT_POWER, RIGHT_POWER, GEAR, CURRENT_OR_TARGET};       // lasciare CURRENT_OR_TARGET come ultimo valore!!!
             
                 payloads = {to_string(shmem->data->start_training),
                 to_string(shmem->data->pid), to_string((int) shmem->data->current_cadence),
@@ -112,7 +114,8 @@ void manager::threadReadFromSM(){
                 to_string((int) shmem->data->theorCurrentsR[1]), to_string((int) shmem->data->theorCurrentsR[2]),
                 to_string((int) shmem->data->theorCurrentsR[3]), to_string((int) shmem->data->heart_rate),
                 to_string(shmem->data->stimulation_frequency), to_string(shmem->data->pulse_width_from_gui),
-                to_string((int) shmem->data->power_left), to_string((int) shmem->data->power_right)};
+                to_string((int) shmem->data->power_left), to_string((int) shmem->data->power_right),
+                to_string(shmem->data->gear)};
 
                 if(shmem->data->pid){
                     payloads.push_back(to_string((int) shmem->data->trg_cad));

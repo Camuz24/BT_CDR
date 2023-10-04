@@ -15,6 +15,7 @@ class shared_memory
     struct shared_memory_packet{
 
         int angle_encoder = 0; //angle
+        int gear = 0;
 
         bool stop =false;
         bool use_ros=false;

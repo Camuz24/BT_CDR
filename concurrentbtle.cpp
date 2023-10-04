@@ -536,19 +536,20 @@ void ConcurrentBtle::setupNotificationLeft(QLowEnergyController *device, const Q
 
 void ConcurrentBtle::getLeftPower(const QLowEnergyCharacteristic &characteristic, const QByteArray &newValue)
 {
-        const char *data = newValue.constData();
+    newLeftData = true;
+    const char *data = newValue.constData();
 
 // Power characteristic
-        // Extract the flags (byte 0)
-        quint8 flags = newValue[0];
-        //qDebug() << "Flags value:" << flags;
+    // Extract the flags (byte 0)
+    quint8 flags = newValue[0];
+    //qDebug() << "Flags value:" << flags;
 
-        // Extract the instantaneous power (bytes 2 and 3)
-        instantaneousLeftPower = (static_cast<qint16>(newValue[2]) | (static_cast<qint16>(newValue[3]) << 8));
-        leftPowerVector.push_back(instantaneousLeftPower);
-        num_left_data++;
-        qDebug() << "Instantaneous Left Power:" << instantaneousLeftPower << "W";
-        write_left_power(instantaneousLeftPower);
+    // Extract the instantaneous power (bytes 2 and 3)
+    instantaneousLeftPower = (static_cast<qint16>(newValue[2]) | (static_cast<qint16>(newValue[3]) << 8));
+    leftPowerVector.push_back(instantaneousLeftPower);
+    num_left_data++;
+    qDebug() << "Instantaneous Left Power:" << instantaneousLeftPower << "W";
+    write_left_power(instantaneousLeftPower);
 
     if (num_left_data >= NUM_CYCLES) {
         leftSumPowerVector = 0;
@@ -636,7 +637,7 @@ void ConcurrentBtle::setupNotificationRight(QLowEnergyController *device, const 
 
 void ConcurrentBtle::getRightPower(const QLowEnergyCharacteristic &characteristic, const QByteArray &newValue)
 {
-
+    newRightData = true;
     const char *data = newValue.constData();
     //valid data set count U8
     //quint8 flags = data[3];

@@ -25,3 +25,4 @@
 #define STIMULATOR_PULSEWIDTH "y" //
 #define LEFT_POWER            "z" //
 #define RIGHT_POWER           "aa" //
+#define GEAR                  "bb"
