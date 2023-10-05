@@ -28,7 +28,6 @@ void myInterruptHandler (int signum) {
 
     printf ("ctrl-c has been pressed. Programs will be terminated in sequence.\n");
     FEScontrol.PidOFF();
-    
     SingletonSM* singletonSM = SingletonSM::getInstance();
     singletonSM->detach_shared_memory();
     exit(signum);
@@ -58,7 +57,6 @@ void powerControl()
             btle->newRightData = false;
         }
     }
-
 }
 
 int main(int argc, char *argv[]){
@@ -77,12 +75,15 @@ int main(int argc, char *argv[]){
     
     SingletonSM* singletonSM = SingletonSM::getInstance();
     singletonSM->init_SM();
+    shared_memory* shmem = singletonSM->get_SM();
 
     chatServer = new ChatServer();
     chatServer->startServer(address);
 
     cout << "Set a target total power:" << endl;
     cin >> targetPower;
+    shmem->data->single_target_power = (double)targetPower;
+
 
     time_t t = time(nullptr);
     struct tm * now = localtime( & t );

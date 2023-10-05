@@ -100,7 +100,7 @@ void manager::threadReadFromSM(){
                 QUAD_L, GLU_L, HAM_L, GAS_L,
                 QUAD_R, GLU_R, HAM_R, GAS_R,
                 HEART_RATE, STIMULATOR_FREQUENCY, STIMULATOR_PULSEWIDTH, 
-                LEFT_POWER, RIGHT_POWER, GEAR, CURRENT_OR_TARGET};       // lasciare CURRENT_OR_TARGET come ultimo valore!!!
+                LEFT_POWER, RIGHT_POWER, GEAR, SINGLE_TARGET_POWER, CURRENT_OR_TARGET};       // lasciare CURRENT_OR_TARGET come ultimo valore!!!
             
                 payloads = {to_string(shmem->data->start_training),
                 to_string(shmem->data->pid), to_string((int) shmem->data->current_cadence),
@@ -115,7 +115,7 @@ void manager::threadReadFromSM(){
                 to_string((int) shmem->data->theorCurrentsR[3]), to_string((int) shmem->data->heart_rate),
                 to_string(shmem->data->stimulation_frequency), to_string(shmem->data->pulse_width_from_gui),
                 to_string((int) shmem->data->power_left), to_string((int) shmem->data->power_right),
-                to_string(shmem->data->gear)};
+                to_string(shmem->data->gear), to_string((int)shmem->data->single_target_power)};
 
                 if(shmem->data->pid){
                     payloads.push_back(to_string((int) shmem->data->trg_cad));

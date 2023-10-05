@@ -43,6 +43,7 @@ class shared_memory
         // Istantaneous power over one cycle
         double power_left = 0.0;
         double power_right = 0.0;
+        double single_target_power = 0.0;
 
         // Pedals angle
         double angle_pedals_left = 0.0;
