@@ -13,6 +13,7 @@
 #include <cstdlib> // for std::rand() and std::srand()
 #include <ctime>   // for std::time()
 #include "pugixml-1.13/src/pugixml.hpp"
+#include <algorithm>
 
 using namespace pugi;
 using std::string;
@@ -96,6 +97,8 @@ void manager::writeOnSM(const QString &sender, const QString &message){
             std::string json_directory = "../../data/"; //TODO: change here accordingly of where the executable file will be!!!
             DIR *directory;
             struct dirent *entry;
+
+            std::replace(payload.begin(), payload.end(), '\'', '"');
             
             // Open the directory containing the file
             directory = opendir(json_directory.c_str());
