@@ -193,8 +193,7 @@ int main(int argc, char *argv[]){
 
     cout << "Set a target total power:" << endl;
     cin >> targetPower;
-    shmem->data->single_target_power = (double)targetPower;
-
+    //shmem->data->single_target_power = (double)targetPower;
 
     // // need to get the target cadence from the GUI/user
     // cout << "Set Target Cadence:";
