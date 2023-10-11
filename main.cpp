@@ -1,28 +1,54 @@
-#include <iostream>
-#include <QCoreApplication>
-#include <QtBluetooth/qbluetoothlocaldevice.h>
-#include "server.h"
-#include <QBluetoothAddress>
-#include <QtWidgets/qapplication.h>
-#include <unistd.h>
-#include <fstream>
-#include <pthread.h>
-#include <thread>
-#include "shared_memory.h"
-#include "concurrentbtle.h"
-#include "singletonSM.h"
-#include "powerController.h"
+#include "headers.h"
+
+#define DEFAULT_LOOP_TIME_NS 1000000L
+#define MIN_CADENCE 25
 
 //using std::string;
 using namespace std;
 powerController FEScontrol;
 ConcurrentBtle* btle;
+//motor Motor;
+pidController Pid;
+cadenceblock Cadence;
+BcmEncoder Encoder;
+
 float targetPower = 0;
+int dc = 0;
+
+// inizializzo variabili per calcolare la cadenza
+float angle = 0;
+float angle_old = -1;
+float cadence;
+double filtered_cadence = 0;
+double filtered_cadence_old = 0;
+vector<double> cadence_vector;
+double sum_cadence_vector = 0;
+double mean_cadence = 0;
+double control_angle = -1;
+
+// data on power and stimulation
+float averageTotalPower = 0;
 
 ofstream powerControlFile;
 string fileName;    // create a name for the file output
 
 SingletonSM* SingletonSM::instancePtr = NULL;
+
+timespec addition(timespec a, timespec b) {
+    timespec r;
+
+    if(a.tv_nsec + b.tv_nsec <= 999999999) {
+        r.tv_nsec = a.tv_nsec + b.tv_nsec;
+        r.tv_sec = a.tv_sec + b.tv_sec;
+    }
+    else {
+        int c = (a.tv_nsec + b.tv_nsec)/1000000000;
+        r.tv_nsec = a.tv_nsec + b.tv_nsec - 1000000000*c;
+        r.tv_sec = a.tv_sec + b.tv_sec + c;
+    }
+
+    return r;
+}
 
 void myInterruptHandler (int signum) {
 
@@ -38,6 +64,29 @@ void powerControl()
 {
     qint16 totalPower;
     float powerPidOutput = 0;
+
+    // inizializzo variabili per calcolare la cadenza
+    float angle = Encoder.getAngle();
+    float angle_old = -1;
+    float cadence;
+    double filtered_cadence = 0;
+    double filtered_cadence_old = 0;
+
+    struct timespec t_now;
+    struct timespec t_next;
+    struct timespec t_period;
+    struct timespec t_wait;
+    struct timespec pause_duration;
+
+    unsigned long int loop_count = 0;
+
+    // t_period defines duration of one "running" cycle (1 ms in this case)
+    t_period.tv_sec = 0;
+    t_period.tv_nsec = DEFAULT_LOOP_TIME_NS;
+
+    // pause_duration defines duration of pause considered when a buttton is pressed (1 s in this case)
+
+    clock_gettime( CLOCK_MONOTONIC, &t_next);
 
     SingletonSM* singletonSM = SingletonSM::getInstance();
     shared_memory* shmem = singletonSM->get_SM();
