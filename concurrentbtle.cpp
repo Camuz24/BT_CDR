@@ -165,9 +165,9 @@ ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
 
     startSearch();
 
-    OpenFileLeft();
-    OpenFileRight();
-    OpenFileCardio();
+    //OpenFileLeft();
+    //OpenFileRight();
+    //OpenFileCardio();
 }
 
 /* double findmax (double p_o, double p_o_o, double p){
