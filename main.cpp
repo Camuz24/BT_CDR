@@ -99,10 +99,13 @@ void powerControl()
 
         t_next = addition(t_next, t_period); // update t_next (needed for usleep at the end)clock_gettime ( CLOCK_MONOTONIC, &t_now);
 
+        // controllo PID motore
         if(loop_count%500 == 0)
         {
-            Motor.setPwmMotor(Pid.PID(MIN_CADENCE, filtered_cadence));
-            //Motor.setPwmMotor(Pid.PID(targetCadence, filtered_cadence));
+            dc = dc + (int)Pid.PID(MIN_CADENCE, filtered_cadence);
+            //dc = dc + (int)Pid.PID(targetCadence, filtered_cadence);
+            if(dc < 30) dc = 30;
+            Motor.setPwmMotor(dc);
         }
 
         if(loop_count%100 == 0)     // con 100 sto andando a 0.1Hz (entro nell'if 10 volte al secondo)
@@ -120,7 +123,7 @@ void powerControl()
                 filtered_cadence = Cadence.filterCadence(cadence, filtered_cadence_old);
                 filtered_cadence_old = filtered_cadence;
                 cadence_vector.push_back(filtered_cadence);
-                cout << "La cadenza attauale è di " << fixed << setprecision(2) << filtered_cadence << endl;
+                cout << "Cadenza attuale: " << fixed << setprecision(2) << filtered_cadence << endl;
                 angle_old = angle;
 
                 // compute the mean cadence over 360° cycle

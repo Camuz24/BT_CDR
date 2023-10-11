@@ -1,6 +1,7 @@
 #ifndef POWERCONTROLLER_H
 #define POWERCONTROLLER_H
 
+#include "headers.h"
 #pragma once
 
 class powerController

@@ -20,7 +20,7 @@ file(GLOB bluetooth_SRC
 
 add_executable(bluetooth_socket_server ${bluetooth_SRC} pugixml-1.13/src/pugixml.hpp pugixml-1.13/src/pugiconfig.hpp pugixml-1.13/src/pugixml.cpp)
 
-target_link_libraries(bluetooth_socket_server Qt${QT_VERSION_MAJOR}::Core Qt5::Bluetooth Qt5::Widgets)
+target_link_libraries(bluetooth_socket_server Qt${QT_VERSION_MAJOR}::Core Qt5::Bluetooth Qt5::Widgets wiringPi pthread bcm2835)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

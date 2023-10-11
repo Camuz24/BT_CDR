@@ -1,6 +1,5 @@
 #include "cadenceblock.h"
 #include "headers.h"
-#include "globals.h"
 
 using namespace std;
 
@@ -17,6 +16,15 @@ struct timespec tau_old;
 float previous_cadence = 0;
 
 float angle_old;
+
+long cadenceblock::timeStructToMs(timespec t) // transforms time as struct to a long integer (time in ms)
+{
+    long result;
+
+    result = t.tv_sec*1000 + t.tv_nsec/1000000;
+
+    return result;
+}
 
 float cadenceblock::computeCadence(float previous_angle, float now_angle)
 {
