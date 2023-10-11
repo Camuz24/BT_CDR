@@ -7,7 +7,7 @@
 using namespace std;
 powerController FEScontrol;
 ConcurrentBtle* btle;
-motor Motor;
+//motor Motor;
 pidController Pid;
 cadenceblock Cadence;
 BcmEncoder Encoder;
@@ -54,7 +54,7 @@ void myInterruptHandler (int signum) {
 
     printf ("ctrl-c has been pressed. Programs will be terminated in sequence.\n");
     FEScontrol.PidOFF();
-    Motor.stopMotor();
+    //Motor.stopMotor();
     
     SingletonSM* singletonSM = SingletonSM::getInstance();
     singletonSM->detach_shared_memory();
@@ -105,7 +105,7 @@ void powerControl()
             dc = dc + (int)Pid.PID(MIN_CADENCE, filtered_cadence);
             //dc = dc + (int)Pid.PID(targetCadence, filtered_cadence);
             if(dc < 30) dc = 30;
-            Motor.setPwmMotor(dc);
+            //Motor.setPwmMotor(dc);
         }
 
         if(loop_count%100 == 0)     // con 100 sto andando a 0.1Hz (entro nell'if 10 volte al secondo)

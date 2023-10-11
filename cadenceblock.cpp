@@ -8,15 +8,6 @@ cadenceblock::cadenceblock()
 
 }
 
-float angle_difference = -99.0;
-float previous_angle_difference = -99.0;
-int interval = 30;
-struct timespec tau_now;
-struct timespec tau_old;
-float previous_cadence = 0;
-
-float angle_old;
-
 long cadenceblock::timeStructToMs(timespec t) // transforms time as struct to a long integer (time in ms)
 {
     long result;
