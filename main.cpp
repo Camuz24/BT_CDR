@@ -7,10 +7,6 @@
 using namespace std;
 powerController FEScontrol;
 ConcurrentBtle* btle;
-//motor Motor;
-pidController Pid;
-cadenceblock Cadence;
-BcmEncoder Encoder;
 
 float targetPower = 0;
 int dc = 0;
@@ -64,13 +60,6 @@ void powerControl()
 {
     qint16 totalPower;
     float powerPidOutput = 0;
-
-    // inizializzo variabili per calcolare la cadenza
-    float angle = Encoder.getAngle();
-    float angle_old = -1;
-    float cadence;
-    double filtered_cadence = 0;
-    double filtered_cadence_old = 0;
 
     struct timespec t_now;
     struct timespec t_next;
