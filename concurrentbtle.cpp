@@ -56,10 +56,10 @@ void write_right_power(qint16 inst_right_power){
 // code to initialize btle function
 ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
 {
-    desiredDevices << QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")); /*SRM_XP_L_1818*/
-//    desiredDevices << QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")); /*SRM_XP_L_2623*/
-    desiredDevices << QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")); /*SRM_XP_R_1968*/
-//    desiredDevices << QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")); /*SRM_XP_R_2971*/
+//    desiredDevices << QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")); /*SRM_XP_L_1818*/
+    desiredDevices << QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")); /*SRM_XP_L_2623*/
+//    desiredDevices << QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")); /*SRM_XP_R_1968*/
+    desiredDevices << QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")); /*SRM_XP_R_2971*/
     desiredDevices << QBluetoothAddress(QStringLiteral("C8:75:75:F8:F1:FA")); /*Polar H10 8E5AB228*/
 
     agent = new QBluetoothDeviceDiscoveryAgent(this);
@@ -105,7 +105,7 @@ ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
         if(num_des_dev_found == 0)
         {
             qDebug() << "Cannot find any device";
-            startSearch();
+            //startSearch();
         }
         else 
         {
@@ -153,8 +153,8 @@ void ConcurrentBtle::establishConnection()
         std::cout << "establishing connection device 1" << std::endl;
 
         for (int i=0;i<3;i++) {
-            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")))
-//            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")))
+//            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")))
+            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")))
                 device1 = new QLowEnergyController(desiredDevices.at(i));
         }
         device1->setParent(this);
@@ -195,8 +195,8 @@ void ConcurrentBtle::establishConnection()
         std::cout << "establishing connection device 2" << std::endl;
 
         for (int i=0;i<3;i++) {
-            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")))
-//            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")))
+//            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")))
+            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")))
             device2 = new QLowEnergyController(desiredDevices.at(i));
         }
         device2->setParent(this);
