@@ -554,7 +554,7 @@ void ConcurrentBtle::getLeftPower(const QLowEnergyCharacteristic &characteristic
         }
         averageLeftPower = leftSumPowerVector / leftPowerVector.size();
         qDebug() << "Average left power in" << NUM_CYCLES << " cycles: " << averageLeftPower;
-        writeFileLeft(averageLeftPower);
+        //writeFileLeft(averageLeftPower);
         leftPowerVector.clear();
         // Reset the counter of cycles done
         num_left_data = 0;
@@ -658,7 +658,7 @@ void ConcurrentBtle::getRightPower(const QLowEnergyCharacteristic &characteristi
         }
         averageRightPower = rightSumPowerVector / rightPowerVector.size();
         qDebug() << "Average right power in" << NUM_CYCLES << " cycles: " << averageRightPower;
-        writeFileRight(averageRightPower);
+        //writeFileRight(averageRightPower);
         rightPowerVector.clear();
         // Reset the counter of cyles done
         num_right_data = 0;
@@ -745,7 +745,7 @@ void ConcurrentBtle::setupNotificationCardio(QLowEnergyController *device, const
         qDebug() << "HR value" << name << *heartrate <<"bpm" ;
         double hr_value = *heartrate;
         write_heart_rate(hr_value);
-        writeFileCardio(hr_value);
+        //writeFileCardio(hr_value);
 
     });
    service->discoverDetails();
