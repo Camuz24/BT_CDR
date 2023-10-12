@@ -20,21 +20,6 @@ std::string filenameLeft = "FileLeft.csv";
 std::string filenameRight = "FileRight.csv";
 std::string filenameCardio = "FileCardio.csv";
 
-double Angle_old_left = 0.0;
-double Angle_old_right = 0.0;
-double sumpo_right = 0.0;
-double sumpo_left = 0.0;
-int countpo_right=0;
-int countpo_left=0;
-double po_old_right=0.0;
-double po_old_left=0.0;
-double po_old_old_left=0.0;
-double po_old_old_right=0.0;
-double massimo_right=0.0;
-double massimo_left=0.0;
-bool temp_check = 0;
-double massimo = 0.0;
-
 bool ok_pleft = 0;
 bool ok_pright = 0;
 bool ok_cardio = 0;
@@ -43,26 +28,6 @@ int hr_sconnesso = 0;
 bool disconnected1 = true;
 bool disconnected2 = true;
 bool disconnected3 = true;
-
-double sumtf_left=0.0;
-double medciclotf_left=0.0;
-int cicli_left=0;
-double tfmean_left=0.0;
-double sumtf_right=0.0;
-double medciclotf_right=0.0;
-int cicli_right=0;
-double tfmean_right=0.0;
-
-
-double sum_force_right = 0.0;
-int count_force_right = 0;
-double sum_meanforce_right = 0.0;
-bool flag_ciclo_right = 0;
-
-double sum_force_left = 0.0;
-int count_force_left = 0;
-double sum_meanforce_left= 0.0;
-bool flag_ciclo_left = 0;
 
 void write_heart_rate(double hr_value){
     // std::cout << "writing HR" << std::endl;
@@ -91,10 +56,10 @@ void write_right_power(qint16 inst_right_power){
 // code to initialize btle function
 ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
 {
-//    desiredDevices << QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")); /*SRM_XP_L_1818*/
-    desiredDevices << QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")); /*SRM_XP_L_2623*/
-//    desiredDevices << QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")); /*SRM_XP_R_1968*/
-    desiredDevices << QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")); /*SRM_XP_R_2971*/
+    desiredDevices << QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")); /*SRM_XP_L_1818*/
+//    desiredDevices << QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")); /*SRM_XP_L_2623*/
+    desiredDevices << QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")); /*SRM_XP_R_1968*/
+//    desiredDevices << QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")); /*SRM_XP_R_2971*/
     desiredDevices << QBluetoothAddress(QStringLiteral("C8:75:75:F8:F1:FA")); /*Polar H10 8E5AB228*/
 
     agent = new QBluetoothDeviceDiscoveryAgent(this);
@@ -113,7 +78,6 @@ ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
 
     connect(agent, &QBluetoothDeviceDiscoveryAgent::finished,
             this, [this](){
-        temp_check = 1;
         qDebug() << "Discovery finished";
         // add a boolean to check connection with shared memory
 
@@ -134,7 +98,7 @@ ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
 
             if (!found) {
                 qDebug() << "Cannot find" << desiredDevice;
-                startSearch();
+                //startSearch();
                 //break;
             }
         }
@@ -170,20 +134,6 @@ ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
     OpenFileCardio();
 }
 
-/* double findmax (double p_o, double p_o_o, double p){
-
-    if((p<p_o)&&(p_o_o<p_o)){
-        if (p_o>massimo){
-        massimo=p_o; //solo se mi trovo in questa condizione altrimento max resta quello che ho già
-             }
-    else {
-        massimo=massimo;
-    }
-    }
-   return massimo;
-
-} */
-
 void ConcurrentBtle::startSearch()
 {
     if (agent->isActive())
@@ -203,8 +153,8 @@ void ConcurrentBtle::establishConnection()
         std::cout << "establishing connection device 1" << std::endl;
 
         for (int i=0;i<3;i++) {
-//            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")))
-            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")))
+            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")))
+//            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")))
                 device1 = new QLowEnergyController(desiredDevices.at(i));
         }
         device1->setParent(this);
@@ -245,8 +195,8 @@ void ConcurrentBtle::establishConnection()
         std::cout << "establishing connection device 2" << std::endl;
 
         for (int i=0;i<3;i++) {
-//            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")))
-            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")))
+            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")))
+//            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")))
             device2 = new QLowEnergyController(desiredDevices.at(i));
         }
         device2->setParent(this);
@@ -317,14 +267,6 @@ void ConcurrentBtle::establishConnection()
             qDebug() << "Device 3 Disconnected";
 
             reconnectTimer3->start();
-            /*  QTimer::singleShot(10000, this, [&](){
-                qDebug() << "Reconnecting device 3";
-                device3->connectToDevice();
-                // device3 = nullptr;
-                SingletonSM* singletonSM = SingletonSM::getInstance();
-                shared_memory* shmem = singletonSM->get_SM();
-                shmem->data->heart_rate = 0.0; 
-            }); */
         });
 
         connect(device3, &QLowEnergyController::discoveryFinished, this, [&](){
@@ -598,7 +540,7 @@ void ConcurrentBtle::setupNotificationRight(QLowEnergyController *device, const 
     // hook up force sensor
     QLowEnergyService *service = device->createServiceObject(QBluetoothUuid::CyclingPower);
     if (!service) {
-        qDebug() << "***********" << name << "force service not found";
+        qDebug() << "***********" << name << "power service not found";
         return;
     }
 
