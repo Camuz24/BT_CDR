@@ -118,10 +118,6 @@ int main(int argc, char *argv[]){
     chatServer = new ChatServer();
     chatServer->startServer(address);
 
-    // cout << "Set a target total power:" << endl;
-    // cin >> targetPower;
-    // shmem->data->single_target_power = (double)targetPower;
-
     time_t t = time(nullptr);
     struct tm * now = localtime( & t );
     char buffer [80];
@@ -141,6 +137,10 @@ int main(int argc, char *argv[]){
     // }
 
     btle = new ConcurrentBtle();
+
+    cout << "Set a single target power:" << endl;
+    cin >> targetPower;
+    shmem->data->single_target_power = (double)targetPower;
 
     thread Thread(powerControl);
     //FEScontrol.PidON();
