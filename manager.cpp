@@ -84,14 +84,35 @@ void manager::writeOnSM(const QString &sender, const QString &message){
             shmem->data->up = payload=="plus";
             shmem->data->down = payload=="minus";
         }else if(type=="startAndStop"){
-            shmem->data->start_training = payload=="start";
+            shmem->data->start_pedaling = payload=="start";
         }else if(type=="pid"){
             shmem->data->pid=payload=="1";
-        }else if(type=="calibrationStartAndStop"){ //TODO: do we need another StartAndStop for calibration???
-            //shmem->data-> = payload=="start";
+        }else if(type=="calibrationStartAndStop"){
+            shmem->data->start_stimulation_calibr = stoi(payload); 
+        }
+        else if(type=="calibrationCurrent"){
+            shmem->data->current_calibration = stoi(payload);     //int
+        }
+        else if(type=="calibrationFrequency"){
+            shmem->data->stimulation_frequency = stoi(payload);   //int
+        }
+        else if(type=="calibrationPulseWidth"){
+            shmem->data->pulse_width_from_gui = stoi(payload);      //int
+        }
+        else if(type=="LeftStimulator"){
+            shmem->data->left_stimulator = stoi(payload);
+        }
+        else if(type=="RightStimulator"){
+            shmem->data->right_stimulator = stoi(payload);
+        }
+        else if(type=="Channel"){
+            shmem->data->channel_calibration = stoi(payload);     //int
         }
         else if(type == "fileName"){
             fileName = payload;
+        }
+        else if(type == "trainingModality"){
+            shmem->data->training_modality_from_gui = payload;
         }
         else if(type=="startTraining"){
             std::string json_directory = "../../data/"; //TODO: change here accordingly of where the executable file will be!!!
@@ -235,10 +256,12 @@ void manager::threadReadFromSM(){
                 PID_PERCENTAGE, CURRENT_PERCENTAGE,
                 QUAD_L, GLU_L, HAM_L, GAS_L,
                 QUAD_R, GLU_R, HAM_R, GAS_R,
-                HEART_RATE, STIMULATOR_FREQUENCY, STIMULATOR_PULSEWIDTH, CURRENT_OR_TARGET
+                HEART_RATE, STIMULATOR_FREQUENCY, STIMULATOR_PULSEWIDTH, CALIBRATION_CURRENT,
+                CALIBRATION_CHANNEL, CALIBRATION_LEFT, CALIBRATION_RIGHT, CALIBRATION_START_STIM,
+                TRAINING_MODALITY, CURRENT_OR_TARGET      // !!! lasciare CURRENT_OR_TARGET come ultimo type!!!
                 };
-            
-                payloads = {to_string(shmem->data->start_training),
+
+                payloads = {to_string(shmem->data->start_pedaling),
                 to_string(shmem->data->pid), to_string((int) shmem->data->current_cadence),
                 to_string((int) shmem->data->angle_encoder), to_string(shmem->data->check_stim1),
                 to_string(shmem->data->check_stim2), to_string(shmem->data->check_pedal_left),
@@ -249,7 +272,10 @@ void manager::threadReadFromSM(){
                 to_string((int) shmem->data->theorCurrentsL[3]), to_string((int) shmem->data->theorCurrentsR[0]),
                 to_string((int) shmem->data->theorCurrentsR[1]), to_string((int) shmem->data->theorCurrentsR[2]),
                 to_string((int) shmem->data->theorCurrentsR[3]), to_string((int) shmem->data->heart_rate),
-                to_string(shmem->data->stimulation_frequency), to_string(shmem->data->pulse_width_from_gui)};
+                to_string(shmem->data->stimulation_frequency), to_string(shmem->data->pulse_width_from_gui), 
+                to_string(shmem->data->current_calibration), to_string(shmem->data->channel_calibration),
+                to_string((int)shmem->data->left_stimulator), to_string((int)shmem->data->right_stimulator), 
+                to_string((int)shmem->data->start_stimulation_calibr), shmem->data->training_modality_from_gui};
 
                 if(shmem->data->pid){
                     payloads.push_back(to_string((int) shmem->data->trg_cad));

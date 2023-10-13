@@ -97,7 +97,7 @@ class shared_memory
         double theorCurrentsL[4]={0};
 
         // Others
-        bool start_training   = 0;
+        bool start_pedaling   = 0;
         bool pause_training   = 0;
         bool stop_training    = 0;
         bool pid              = 0;
@@ -107,12 +107,8 @@ class shared_memory
 
         // Input variables from GUI
 
-        int modality_from_gui = 0;
         float saturation_current_from_gui  = 0.0;
-        int pulse_width_from_gui = 0;
-        int stimulation_frequency = 0;
         float target_cadence_from_gui  = 0.0;
-
         int type_training_from_gui = 0;
 
         bool input_running = false;
@@ -131,13 +127,16 @@ class shared_memory
 
         double m_cadence = 0.0;
 
-
-        int stimulator_calibration = 0;
+        //Calibration variables
         int current_calibration    = 0;
-        int period_calibration     = 0;
-        int pulsewidth_calibration = 0;
         int channel_calibration    = 0;
-        int flag_calibrate         = 0;
+        bool start_stimulation_calibr = false;
+        bool left_stimulator = false;
+        bool right_stimulator = false;
+
+        int stimulation_frequency = 0;
+        int pulse_width_from_gui = 0;
+        std::string training_modality_from_gui = "";
 
         int trg_cad = 0; //questa
         std::string file_name ;

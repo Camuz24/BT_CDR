@@ -23,3 +23,9 @@
 #define ERROR                 "w" //
 #define STIMULATOR_FREQUENCY  "x" //
 #define STIMULATOR_PULSEWIDTH "y" //
+#define CALIBRATION_CURRENT   "z"
+#define CALIBRATION_CHANNEL   "aa"
+#define CALIBRATION_LEFT      "bb"
+#define CALIBRATION_RIGHT     "cc"
+#define CALIBRATION_START_STIM "dd"
+#define TRAINING_MODALITY     "ee"
