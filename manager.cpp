@@ -94,10 +94,10 @@ void manager::writeOnSM(const QString &sender, const QString &message){
             shmem->data->current_calibration = stoi(payload);     //int
         }
         else if(type=="calibrationFrequency"){
-            shmem->data->stimulation_frequency = stoi(payload);   //int
+            shmem->data->stim_freq_calib = stoi(payload);   //int
         }
         else if(type=="calibrationPulseWidth"){
-            shmem->data->pulse_width_from_gui = stoi(payload);      //int
+            shmem->data->pw_calib = stoi(payload);      //int
         }
         else if(type=="LeftStimulator"){
             shmem->data->left_stimulator = stoi(payload);
