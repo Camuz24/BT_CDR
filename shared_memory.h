@@ -138,7 +138,7 @@ class shared_memory
 
         int stimulation_frequency = 0;
         int pulse_width_from_gui = 0;
-        std::string training_modality_from_gui = "";
+        int training_modality_from_gui = 0;
 
         //Initialization file
         bool flag_file = 0;
