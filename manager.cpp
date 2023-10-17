@@ -88,7 +88,7 @@ void manager::writeOnSM(const QString &sender, const QString &message){
         }else if(type=="pid"){
             shmem->data->pid=payload=="1";
         }else if(type=="calibrationStartAndStop"){
-            shmem->data->start_stimulation_calibr = stoi(payload); 
+            shmem->data->start_stimulation_calibr = payload=="start" ; 
         }
         else if(type=="calibrationCurrent"){
             shmem->data->current_calibration = stoi(payload);     //int
@@ -100,13 +100,22 @@ void manager::writeOnSM(const QString &sender, const QString &message){
             shmem->data->pw_calib = stoi(payload);      //int
         }
         else if(type=="LeftStimulator"){
-            shmem->data->left_stimulator = stoi(payload);
+            shmem->data->left_stimulator = payload=="true";
         }
         else if(type=="RightStimulator"){
-            shmem->data->right_stimulator = stoi(payload);
+            shmem->data->right_stimulator = payload=="true";
         }
         else if(type=="Channel"){
-            shmem->data->channel_calibration = stoi(payload);     //int
+            if(payload == "Red Channel"){
+                shmem->data->channel_calibration = 0;
+            }else if(payload == "Blue Channel"){
+                shmem->data->channel_calibration = 1;
+            }else if(payload == "Black Channel"){
+                shmem->data->channel_calibration = 2;
+            }else if(payload == "White Channel"){
+                shmem->data->channel_calibration = 3;
+            }
+             
         }
         else if(type == "fileName"){
             fileName = payload;
