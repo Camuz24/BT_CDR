@@ -133,6 +133,8 @@ class shared_memory
         bool start_stimulation_calibr = false;
         bool left_stimulator = false;
         bool right_stimulator = false;
+        int stim_freq_calib=40;
+        int pw_calib=0;
 
         int stimulation_frequency = 0;
         int pulse_width_from_gui = 0;
