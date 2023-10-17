@@ -138,10 +138,12 @@ class shared_memory
         int pulse_width_from_gui = 0;
         std::string training_modality_from_gui = "";
 
-        int trg_cad = 0; //questa
+        //Initialization file
+        bool flag_file = 0;
         std::string file_name ;
-        char file_name_char;
 
+        int trg_cad = 0; //questa
+        char file_name_char;
 
         bool thread_running        = 1;
         bool stop_thread_running   = 0;

@@ -165,6 +165,9 @@ void manager::writeOnSM(const QString &sender, const QString &message){
 
             closedir(directory);
 
+            shmem->data->file_name = fileName;
+            shmem->data->flag_file = true;
+
         }
         else if(type=="request"){
             std::string directory = "../../data/"; //TODO: change here accordingly of where the executable file will be!!!
