@@ -121,7 +121,7 @@ void manager::writeOnSM(const QString &sender, const QString &message){
             fileName = payload;
         }
         else if(type == "trainingModality"){
-            shmem->data->training_modality_from_gui = payload;
+            //shmem->data->training_modality_from_gui = stoi(payload);
         }
         else if(type=="startTraining"){
             std::string json_directory = "../../data/"; //TODO: change here accordingly of where the executable file will be!!!
@@ -174,7 +174,8 @@ void manager::writeOnSM(const QString &sender, const QString &message){
 
             closedir(directory);
 
-            shmem->data->file_name = fileName;
+            strcpy(shmem->data->file_name, fileName.c_str()); 
+            shmem->data->file_name_length=fileName.length() + 1;
             shmem->data->flag_file = true;
 
         }
@@ -287,7 +288,7 @@ void manager::threadReadFromSM(){
                 to_string(shmem->data->stimulation_frequency), to_string(shmem->data->pulse_width_from_gui), 
                 to_string(shmem->data->current_calibration), to_string(shmem->data->channel_calibration),
                 to_string((int)shmem->data->left_stimulator), to_string((int)shmem->data->right_stimulator), 
-                to_string((int)shmem->data->start_stimulation_calibr), shmem->data->training_modality_from_gui};
+                to_string((int)shmem->data->start_stimulation_calibr), to_string(shmem->data->training_modality_from_gui)};
 
                 if(shmem->data->pid){
                     payloads.push_back(to_string((int) shmem->data->trg_cad));

@@ -138,11 +138,12 @@ class shared_memory
 
         int stimulation_frequency = 0;
         int pulse_width_from_gui = 0;
-        std::string training_modality_from_gui = "";
+        int training_modality_from_gui = 0;
 
         //Initialization file
         bool flag_file = 0;
-        std::string file_name ;
+        char file_name[64];
+        int file_name_length=0;
 
         int trg_cad = 0; //questa
         char file_name_char;
