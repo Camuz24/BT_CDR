@@ -91,10 +91,10 @@ void write_right_power(qint16 inst_right_power){
 // code to initialize btle function
 ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
 {
-//    desiredDevices << QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")); /*SRM_XP_L_1818*/   //Colombo
-    desiredDevices << QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")); /*SRM_XP_L_2623*/     //Lecco
-//    desiredDevices << QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")); /*SRM_XP_R_1968*/   //Colombo
-    desiredDevices << QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")); /*SRM_XP_R_2971*/     //Lecco
+    desiredDevices << QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")); /*SRM_XP_L_1818*/   //Colombo
+//    desiredDevices << QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")); /*SRM_XP_L_2623*/     //Lecco
+    desiredDevices << QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")); /*SRM_XP_R_1968*/   //Colombo
+//    desiredDevices << QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")); /*SRM_XP_R_2971*/     //Lecco
     desiredDevices << QBluetoothAddress(QStringLiteral("C8:75:75:F8:F1:OO")); /*Polar H10 8E5AB228*/    //C8:75:75:F8:F1:FA
 
     agent = new QBluetoothDeviceDiscoveryAgent(this);
@@ -170,20 +170,6 @@ ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
     //OpenFileCardio();
 }
 
-/* double findmax (double p_o, double p_o_o, double p){
-
-    if((p<p_o)&&(p_o_o<p_o)){
-        if (p_o>massimo){
-        massimo=p_o; //solo se mi trovo in questa condizione altrimento max resta quello che ho già
-             }
-    else {
-        massimo=massimo;
-    }
-    }
-   return massimo;
-
-} */
-
 void ConcurrentBtle::startSearch()
 {
     if (agent->isActive())
@@ -203,8 +189,8 @@ void ConcurrentBtle::establishConnection()
         std::cout << "establishing connection device 1" << std::endl;
 
         for (int i=0;i<3;i++) {
-//            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")))     //Colombo
-            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")))       //Lecco
+            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")))     //Colombo
+//            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")))       //Lecco
                 device1 = new QLowEnergyController(desiredDevices.at(i));
         }
         device1->setParent(this);
@@ -245,8 +231,8 @@ void ConcurrentBtle::establishConnection()
         std::cout << "establishing connection device 2" << std::endl;
 
         for (int i=0;i<3;i++) {
-//            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")))     //Colombo
-            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")))       //Lecco
+            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")))     //Colombo
+//            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")))       //Lecco
             device2 = new QLowEnergyController(desiredDevices.at(i));
         }
         device2->setParent(this);
