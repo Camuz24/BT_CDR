@@ -18,7 +18,7 @@ private:
         bool powerPidEnabled = false;
 
         double max = 1;
-        double min = 0;
+        double min = -1;
         double error = 0;
         double integral = 0;
         double oldError = 0;
@@ -26,7 +26,7 @@ private:
         double output = 0;
 
         double kp = 0.002;
-        double ki = 0.0;
+        double ki = 0.000025;
         double kd = 0.0;
 
 };

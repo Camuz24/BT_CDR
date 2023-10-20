@@ -94,6 +94,11 @@ class shared_memory
 
         int pid_percentage=0;// da qui in giù
         int current_percentage=0;
+        
+        // Power control variables
+        double pid_coeff = 0;
+        float total_target_power = 0;
+        int total_power = 0;
 
         double theorCurrentsR[4]={0};
         double theorCurrentsL[4]={0};
