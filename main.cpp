@@ -2,13 +2,14 @@
 
 #define DEFAULT_LOOP_TIME_NS 1000000L
 #define MIN_CADENCE 25
+#define SINGLE_POWER_TARGET 10
 
 //using std::string;
 using namespace std;
 powerController FEScontrol;
 ConcurrentBtle* btle;
 
-float targetPower = 0;
+//float targetPower = 0;
 int dc = 0;
 
 // inizializzo variabili per calcolare la cadenza
@@ -49,7 +50,7 @@ timespec addition(timespec a, timespec b) {
 void myInterruptHandler (int signum) {
 
     printf ("ctrl-c has been pressed. Programs will be terminated in sequence.\n");
-    //FEScontrol.PidOFF();
+    FEScontrol.PidOFF();
     SingletonSM* singletonSM = SingletonSM::getInstance();
     singletonSM->detach_shared_memory();
     exit(signum);
@@ -80,21 +81,21 @@ void powerControl()
     SingletonSM* singletonSM = SingletonSM::getInstance();
     shared_memory* shmem = singletonSM->get_SM();
 
-    // while(1)
-    // {
-    //     if(btle->newLeftData && btle->newRightData)
-    //     { 
-    //         totalPower = btle->instantaneousLeftPower + btle->instantaneousRightPower;
-    //         cout << "Total power (left + right) over one cycle:" << totalPower << endl;
-    //         powerPidOutput = FEScontrol.PID(targetPower, totalPower);
-    //         cout << "Pid coefficient:" << powerPidOutput << endl;
+    while(1)
+    {
+        if(btle->newLeftData && btle->newRightData)
+        { 
+            totalPower = btle->instantaneousLeftPower + btle->instantaneousRightPower;
+            cout << "Total power (left + right) over one cycle:" << totalPower << endl;
+            powerPidOutput = FEScontrol.PID(SINGLE_POWER_TARGET, totalPower);
+            cout << "Pid coefficient:" << powerPidOutput << endl;
 
-    //         powerControlFile << endl << powerPidOutput << "," << totalPower << "," << shmem->data->gear;
+            powerControlFile << endl << powerPidOutput << "," << totalPower << "," << shmem->data->gear << "," << cadence;
 
-    //         btle->newLeftData = false;
-    //         btle->newRightData = false;
-    //     }
-    // }
+            btle->newLeftData = false;
+            btle->newRightData = false;
+        }
+    }
 }
 
 int main(int argc, char *argv[]){
@@ -115,6 +116,12 @@ int main(int argc, char *argv[]){
     singletonSM->init_SM();
     shared_memory* shmem = singletonSM->get_SM();
 
+    // cout << "Set a single target power:" << endl;
+    // cin >> targetPower;
+    // shmem->data->single_target_power = (double)targetPower;
+
+    shmem->data->single_target_power = SINGLE_POWER_TARGET;
+
     chatServer = new ChatServer();
     chatServer->startServer(address);
 
@@ -122,30 +129,25 @@ int main(int argc, char *argv[]){
     struct tm * now = localtime( & t );
     char buffer [80];
 
-    // // Log directory
-    // fileName = strftime (buffer,80,"/home/pi/Desktop/BT_CDR/FilePowerControlCamilla/AcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
-    // powerControlFile.open(buffer);
-    // // write the file headers
-    // if(powerControlFile.is_open())
-    // {
-    //     powerControlFile << endl << "PID coefficient" << "," 
-    //                              << "Total Power" << "," 
-    //                              << "Gear" << endl;
-    // }
-    // else if (!powerControlFile.is_open()) {
-    //     cout << "Error: Unable to open the file " << fileName << endl;
-    // }
+    // Log directory
+    fileName = strftime (buffer,80,"/home/pi/Desktop/BT_CDR/FilePowerControlCamilla/AcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
+    powerControlFile.open(buffer);
+    // write the file headers
+    if(powerControlFile.is_open())
+    {
+        powerControlFile << endl << "PID coefficient" << "," 
+                                 << "Total Power" << "," 
+                                 << "Gear" << ","
+                                 << "Cadence" << endl;
+    }
+    else if (!powerControlFile.is_open()) {
+        cout << "Error: Unable to open the file " << fileName << endl;
+    }
 
     btle = new ConcurrentBtle();
 
-    cout << "Set a single target power:" << endl;
-    cin >> targetPower;
-    shmem->data->single_target_power = (double)targetPower;
-
     thread Thread(powerControl);
-    //FEScontrol.PidON();
-
-    //TODO: crea due classi separate per polar e pedale sinistro
+    FEScontrol.PidON();
     
     signal(SIGINT, myInterruptHandler);
 

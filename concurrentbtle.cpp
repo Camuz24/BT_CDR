@@ -132,9 +132,9 @@ ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
 
     startSearch();
 
-    OpenFileLeft();
-    OpenFileRight();
-    OpenFileCardio();
+    // OpenFileLeft();
+    // OpenFileRight();
+    // OpenFileCardio();
 }
 
 void ConcurrentBtle::startSearch()
@@ -540,7 +540,7 @@ void ConcurrentBtle::setupNotificationRight(QLowEnergyController *device, const 
     if (!device)
         return;
 
-    // hook up force sensor
+    // hook up power sensor
     QLowEnergyService *service = device->createServiceObject(QBluetoothUuid::CyclingPower);
     if (!service) {
         qDebug() << "***********" << name << "power service not found";
@@ -580,9 +580,6 @@ void ConcurrentBtle::getRightPower(const QLowEnergyCharacteristic &characteristi
 {
     newRightData = true;
     const char *data = newValue.constData();
-    //valid data set count U8
-    //quint8 flags = data[3];
-//    qDebug() << "Valid data set count" << flags;
 
 // Power characteristic
     // Extract the flags (byte 0)
