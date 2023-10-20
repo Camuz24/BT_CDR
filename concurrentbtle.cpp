@@ -59,11 +59,11 @@ ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
 {
     //std::system("hciconfig hci1 down");     //Disable the Internal Bluetooth Adapter
     //std::system("btattach -B hci0 -P public -S 115200 /dev/ttyUSB0");     //Set the USB Dongle as the Default Adapter
-//    desiredDevices << QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")); /*SRM_XP_L_1818     Colombo*/
-    desiredDevices << QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")); /*SRM_XP_L_2623   Lecco*/
-//    desiredDevices << QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")); /*SRM_XP_R_1968     Colombo*/
-    desiredDevices << QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")); /*SRM_XP_R_2971   Lecco*/
-    desiredDevices << QBluetoothAddress(QStringLiteral("C8:75:75:F8:F1:CC")); /*Polar H10 8E5AB228*/ //C8:75:75:F8:F1:FA
+    desiredDevices << QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")); /*SRM_XP_L_1818     Colombo*/
+//    desiredDevices << QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")); /*SRM_XP_L_2623   Lecco*/
+    desiredDevices << QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")); /*SRM_XP_R_1968     Colombo*/
+//    desiredDevices << QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")); /*SRM_XP_R_2971   Lecco*/
+//    desiredDevices << QBluetoothAddress(QStringLiteral("C8:75:75:F8:F1:CC")); /*Polar H10 8E5AB228*/ //C8:75:75:F8:F1:FA
 
     agent = new QBluetoothDeviceDiscoveryAgent(this);
     agent->setLowEnergyDiscoveryTimeout(10000);
@@ -126,9 +126,9 @@ ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
     reconnectTimer2->setInterval(5000); // Adjust the interval as needed (e.g., 5 seconds)
     connect(reconnectTimer2, &QTimer::timeout, this, &ConcurrentBtle::reconnectDevice);
 
-    reconnectTimer3 = new QTimer(this);
-    reconnectTimer3->setInterval(5000); // Adjust the interval as needed (e.g., 5 seconds)
-    connect(reconnectTimer3, &QTimer::timeout, this, &ConcurrentBtle::reconnectDevice);
+    // reconnectTimer3 = new QTimer(this);
+    // reconnectTimer3->setInterval(5000); // Adjust the interval as needed (e.g., 5 seconds)
+    // connect(reconnectTimer3, &QTimer::timeout, this, &ConcurrentBtle::reconnectDevice);
 
     startSearch();
 
@@ -156,8 +156,8 @@ void ConcurrentBtle::establishConnection()
         std::cout << "establishing connection device 1" << std::endl;
 
         for (int i=0;i<3;i++) {
-//            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")))     //Colombo
-            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")))       //Lecco
+            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")))     //Colombo
+//            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")))       //Lecco
                 device1 = new QLowEnergyController(desiredDevices.at(i));
         }
         device1->setParent(this);
@@ -198,8 +198,8 @@ void ConcurrentBtle::establishConnection()
         std::cout << "establishing connection device 2" << std::endl;
 
         for (int i=0;i<3;i++) {
-//            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")))     //Colombo
-            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")))     //Lecco
+            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")))     //Colombo
+//            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")))     //Lecco
             device2 = new QLowEnergyController(desiredDevices.at(i));
         }
         device2->setParent(this);
@@ -237,48 +237,48 @@ void ConcurrentBtle::establishConnection()
         device2->connectToDevice();
     }
 
-    if (!device3 && desiredDevices.count() >= 3) {
-        std::cout << "establishing connection device 3" << std::endl;
+    // if (!device3 && desiredDevices.count() >= 3) {
+    //     std::cout << "establishing connection device 3" << std::endl;
 
-        for (int i=0;i<3;i++) {
-            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("C8:75:75:F8:F1:CC")))   //C8:75:75:F8:F1:FA
-            device3 = new QLowEnergyController(desiredDevices.at(i));
-        }
+    //     for (int i=0;i<3;i++) {
+    //         if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("C8:75:75:F8:F1:CC")))   //C8:75:75:F8:F1:FA
+    //         device3 = new QLowEnergyController(desiredDevices.at(i));
+    //     }
         
-        device3->setParent(this);
-        connect(device3, &QLowEnergyController::connected, this, [&](){
-            ok_cardio = 1;
-            disconnected3 = false;
+    //     device3->setParent(this);
+    //     connect(device3, &QLowEnergyController::connected, this, [&](){
+    //         ok_cardio = 1;
+    //         disconnected3 = false;
 
-            SingletonSM* singletonSM = SingletonSM::getInstance();
-            shared_memory* shmem = singletonSM->get_SM();
-            shmem->data->check_cardio = ok_cardio;
+    //         SingletonSM* singletonSM = SingletonSM::getInstance();
+    //         shared_memory* shmem = singletonSM->get_SM();
+    //         shmem->data->check_cardio = ok_cardio;
 
-            qDebug() << "*********** Device 3 Polar H10 connected" << device3->remoteAddress();
-            device3->discoverServices();
-            reconnectTimer3->stop();
-        });
+    //         qDebug() << "*********** Device 3 Polar H10 connected" << device3->remoteAddress();
+    //         device3->discoverServices();
+    //         reconnectTimer3->stop();
+    //     });
 
-        connect(device3, &QLowEnergyController::disconnected, this, [&](){
-            ok_cardio = 0;
-            disconnected3 = true;
+    //     connect(device3, &QLowEnergyController::disconnected, this, [&](){
+    //         ok_cardio = 0;
+    //         disconnected3 = true;
 
-            SingletonSM* singletonSM = SingletonSM::getInstance();
-            shared_memory* shmem = singletonSM->get_SM();
-            shmem->data->check_cardio = ok_cardio;
+    //         SingletonSM* singletonSM = SingletonSM::getInstance();
+    //         shared_memory* shmem = singletonSM->get_SM();
+    //         shmem->data->check_cardio = ok_cardio;
 
-            qDebug() << "Device 3 Disconnected";
+    //         qDebug() << "Device 3 Disconnected";
 
-            reconnectTimer3->start();
-        });
+    //         reconnectTimer3->start();
+    //     });
 
-        connect(device3, &QLowEnergyController::discoveryFinished, this, [&](){
-           qDebug() <<  "*********** Device 3 discovery finished";
-           setupNotificationCardio(device3, QStringLiteral("Device 3"));
-        });
+    //     connect(device3, &QLowEnergyController::discoveryFinished, this, [&](){
+    //        qDebug() <<  "*********** Device 3 discovery finished";
+    //        setupNotificationCardio(device3, QStringLiteral("Device 3"));
+    //     });
 
-        device3->connectToDevice();
-    }
+    //     device3->connectToDevice();
+    // }
 }
 
 void ConcurrentBtle::reconnectDevice()
@@ -365,47 +365,47 @@ void ConcurrentBtle::reconnectDevice()
         }
     }
 
-    if(disconnected3)
-    {
-        qDebug() << "Attempting to reconnect Device 3...";
-        if (device3)
-        {
-            device3->disconnectFromDevice(); // Ensure the device is disconnected first
-            device3->connectToDevice();
-        }
-        else
-        {
-            // If device3 is not initialized, create a new instance and connect
-            device3 = new QLowEnergyController(desiredDevices.at(2));
-            connect(device3, &QLowEnergyController::connected, this, [&](){
-                ok_cardio = true;
-                disconnected3 = false;
+    // if(disconnected3)
+    // {
+    //     qDebug() << "Attempting to reconnect Device 3...";
+    //     if (device3)
+    //     {
+    //         device3->disconnectFromDevice(); // Ensure the device is disconnected first
+    //         device3->connectToDevice();
+    //     }
+    //     else
+    //     {
+    //         // If device3 is not initialized, create a new instance and connect
+    //         device3 = new QLowEnergyController(desiredDevices.at(2));
+    //         connect(device3, &QLowEnergyController::connected, this, [&](){
+    //             ok_cardio = true;
+    //             disconnected3 = false;
 
-                SingletonSM* singletonSM = SingletonSM::getInstance();
-                shared_memory* shmem = singletonSM->get_SM();
-                shmem->data->check_cardio = ok_cardio;
+    //             SingletonSM* singletonSM = SingletonSM::getInstance();
+    //             shared_memory* shmem = singletonSM->get_SM();
+    //             shmem->data->check_cardio = ok_cardio;
 
-                qDebug() << "*********** Device 3 Polar connected" << device3->remoteAddress();
-                device3->discoverServices();
-                reconnectTimer3->stop();
+    //             qDebug() << "*********** Device 3 Polar connected" << device3->remoteAddress();
+    //             device3->discoverServices();
+    //             reconnectTimer3->stop();
 
-            });
+    //         });
 
-            connect(device3, &QLowEnergyController::disconnected, this, [&](){
-                qDebug() << "Device 3 disconnected";
-                ok_cardio = false;
-                disconnected3 = true;
+    //         connect(device3, &QLowEnergyController::disconnected, this, [&](){
+    //             qDebug() << "Device 3 disconnected";
+    //             ok_cardio = false;
+    //             disconnected3 = true;
 
-                SingletonSM* singletonSM = SingletonSM::getInstance();
-                shared_memory* shmem = singletonSM->get_SM();
-                shmem->data->check_cardio = ok_cardio;
+    //             SingletonSM* singletonSM = SingletonSM::getInstance();
+    //             shared_memory* shmem = singletonSM->get_SM();
+    //             shmem->data->check_cardio = ok_cardio;
 
-                reconnectTimer3->start();
-            });
+    //             reconnectTimer3->start();
+    //         });
 
-            device3->connectToDevice();
-        }
-    }
+    //         device3->connectToDevice();
+    //     }
+    // }
 }
 
 void OpenFileLeft()
@@ -608,88 +608,88 @@ void ConcurrentBtle::getRightPower(const QLowEnergyCharacteristic &characteristi
 
 }
 
-void OpenFileCardio()
-{
-    // Get system  time
-    time_t t = time(nullptr);
-    struct tm * now = localtime( & t );
-    char buffer [80];
+// void OpenFileCardio()
+// {
+//     // Get system  time
+//     time_t t = time(nullptr);
+//     struct tm * now = localtime( & t );
+//     char buffer [80];
 
-    // Log directory
-    filenameCardio = strftime (buffer,80,"/home/pi/Desktop/FilePedaliCamilla/CardioAcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
-    CSVfileCardio.open(buffer);
-    // write the file headers
-    if(CSVfileCardio.is_open())
-    {
-        CSVfileCardio << std::endl << "Heart Rate" << std::endl;
-    }
-    else if (!CSVfileCardio.is_open()) {
-        std::cout << "Error: Unable to open the file " << filenameCardio << std::endl;
-        return;
-    }
-}
+//     // Log directory
+//     filenameCardio = strftime (buffer,80,"/home/pi/Desktop/FilePedaliCamilla/CardioAcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
+//     CSVfileCardio.open(buffer);
+//     // write the file headers
+//     if(CSVfileCardio.is_open())
+//     {
+//         CSVfileCardio << std::endl << "Heart Rate" << std::endl;
+//     }
+//     else if (!CSVfileCardio.is_open()) {
+//         std::cout << "Error: Unable to open the file " << filenameCardio << std::endl;
+//         return;
+//     }
+// }
 
-void writeFileCardio(double parameter1){
-    // clock_gettime ( CLOCK_MONOTONIC, &timeLoop);
-    CSVfileCardio << std::endl << parameter1;
+// void writeFileCardio(double parameter1){
+//     // clock_gettime ( CLOCK_MONOTONIC, &timeLoop);
+//     CSVfileCardio << std::endl << parameter1;
 
-}
+// }
 
-void ConcurrentBtle::setupNotificationCardio(QLowEnergyController *device, const QString &name)
-{
+// void ConcurrentBtle::setupNotificationCardio(QLowEnergyController *device, const QString &name)
+// {
 
-    if (!device)
-        return;
+//     if (!device)
+//         return;
 
-    QLowEnergyService *service = device->createServiceObject(QBluetoothUuid::HeartRate);
-    if (!service) {
-        qDebug() << "***********" << name << "cardio service not found";
-        return;
-    }
+//     QLowEnergyService *service = device->createServiceObject(QBluetoothUuid::HeartRate);
+//     if (!service) {
+//         qDebug() << "***********" << name << "cardio service not found";
+//         return;
+//     }
 
-    qDebug() << "#####" << name << service->serviceName() << service->serviceUuid();
+//     qDebug() << "#####" << name << service->serviceName() << service->serviceUuid();
 
-    connect(service, &QLowEnergyService::stateChanged,
-            this, [name, service](QLowEnergyService::ServiceState s){
-        if (s == QLowEnergyService::ServiceDiscovered) {
-            qDebug() << "***********" << name << "cardio service discovered" << service->serviceUuid();
-            const QLowEnergyCharacteristic tempData = service->characteristic(QBluetoothUuid::HeartRateMeasurement);
+//     connect(service, &QLowEnergyService::stateChanged,
+//             this, [name, service](QLowEnergyService::ServiceState s){
+//         if (s == QLowEnergyService::ServiceDiscovered) {
+//             qDebug() << "***********" << name << "cardio service discovered" << service->serviceUuid();
+//             const QLowEnergyCharacteristic tempData = service->characteristic(QBluetoothUuid::HeartRateMeasurement);
 
-            if (!tempData.isValid()) {
-                qDebug() << "***********" << name << "cardio char not valid";
-                return;
-            }
+//             if (!tempData.isValid()) {
+//                 qDebug() << "***********" << name << "cardio char not valid";
+//                 return;
+//             }
 
-            const QLowEnergyDescriptor notification = tempData.descriptor(
-                        QBluetoothUuid(QBluetoothUuid::ClientCharacteristicConfiguration));
-            if (!notification.isValid()) {
-                qDebug() << "***********" << name << "cardio notification not valid";
-                return;
-            }
+//             const QLowEnergyDescriptor notification = tempData.descriptor(
+//                         QBluetoothUuid(QBluetoothUuid::ClientCharacteristicConfiguration));
+//             if (!notification.isValid()) {
+//                 qDebug() << "***********" << name << "cardio notification not valid";
+//                 return;
+//             }
 
-            service->writeDescriptor(notification, QByteArray::fromHex("0100"));
+//             service->writeDescriptor(notification, QByteArray::fromHex("0100"));
 
-        }
-    });
+//         }
+//     });
 
 
-    connect(service, &QLowEnergyService::characteristicChanged,
-            this, [name](const QLowEnergyCharacteristic &characteristic, const QByteArray &newValue) {
+//     connect(service, &QLowEnergyService::characteristicChanged,
+//             this, [name](const QLowEnergyCharacteristic &characteristic, const QByteArray &newValue) {
 
-        int a = (newValue.size());
-        // qDebug() << "Size:" << a;
+//         int a = (newValue.size());
+//         // qDebug() << "Size:" << a;
 
-        const char *data = newValue.constData();
-        quint8 flags = data[0];
+//         const char *data = newValue.constData();
+//         quint8 flags = data[0];
 
-        //HR 8bit
-        quint8 *heartrate= (quint8 *) &data[1];
-        qDebug() << "HR value" << name << *heartrate <<"bpm" ;
-        double hr_value = *heartrate;
-        write_heart_rate(hr_value);
-        writeFileCardio(hr_value);
+//         //HR 8bit
+//         quint8 *heartrate= (quint8 *) &data[1];
+//         qDebug() << "HR value" << name << *heartrate <<"bpm" ;
+//         double hr_value = *heartrate;
+//         write_heart_rate(hr_value);
+//         writeFileCardio(hr_value);
 
-    });
-   service->discoverDetails();
-}
+//     });
+//    service->discoverDetails();
+// }
 

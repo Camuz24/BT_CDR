@@ -25,8 +25,8 @@ private:
 
         double output = 0;
 
-        double kp = 0.002;
-        double ki = 0.000025;
+        double kp = 0.008;
+        double ki = 0.0007;
         double kd = 0.0;
 
 };

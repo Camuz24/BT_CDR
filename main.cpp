@@ -149,7 +149,7 @@ void powerControl()
                     else actual_fake_current = 100;
                     
                     fake_current = actual_fake_current;
-                    cout << "Fake current output: " << actual_fake_current << endl;
+                    //cout << "Fake current output: " << actual_fake_current << endl;
 
                     powerControlFile << endl << fixed << setprecision(2) << powerPidOutput << ",\t" << totalPower << ",\t" << actual_fake_current << ",\t" << shmem->data->gear << ",\t" << cadence;
 
