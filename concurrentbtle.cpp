@@ -14,21 +14,21 @@
 
 ofstream CSVfileLeft; //dato grezzo pedale sinistro ed efficiency
 ofstream CSVfileRight; //dato grezzo pedale destro ed efficiency
-ofstream CSVfileCardio; //dato grezzo cardio
+//ofstream CSVfileCardio; //dato grezzo cardio
 
 // create a name for the file output
 std::string filenameLeft = "FileLeft.csv";
 std::string filenameRight = "FileRight.csv";
-std::string filenameCardio = "FileCardio.csv";
+//std::string filenameCardio = "FileCardio.csv";
 
 bool ok_pleft = 0;
 bool ok_pright = 0;
-bool ok_cardio = 0;
-int hr_sconnesso = 0;
+// bool ok_cardio = 0;
+// int hr_sconnesso = 0;
 
 bool disconnected1 = true;
 bool disconnected2 = true;
-bool disconnected3 = true;
+//bool disconnected3 = true;
 
 void write_heart_rate(double hr_value){
     // std::cout << "writing HR" << std::endl;
