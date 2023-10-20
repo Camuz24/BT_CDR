@@ -14,7 +14,7 @@ int dc = 0;
 
 // inizializzo variabili per calcolare la cadenza
 float angle = 0;
-float angle_old = -1;
+float prev_angle = -1;
 float cadence;
 double filtered_cadence = 0;
 double filtered_cadence_old = 0;

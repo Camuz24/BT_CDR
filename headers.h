@@ -15,3 +15,5 @@
 #include "concurrentbtle.h"
 #include "singletonSM.h"
 #include "powerController.h"
+#include "cadenceblock.h"
+#include "bcmencoder.h"
