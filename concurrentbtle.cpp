@@ -108,7 +108,7 @@ ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
         if(num_des_dev_found == 0)
         {
             qDebug() << "Cannot find any device";
-            //startSearch();
+            startSearch();      // keep looking for devices when non found
         }
         else 
         {
