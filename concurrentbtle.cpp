@@ -15,11 +15,24 @@
 ofstream CSVfileLeft; //dato grezzo pedale sinistro ed efficiency
 ofstream CSVfileRight; //dato grezzo pedale destro ed efficiency
 //ofstream CSVfileCardio; //dato grezzo cardio
+ofstream CSVfileLeftPowerForce;
+ofstream CSVfileRightPowerForce;
 
 // create a name for the file output
 std::string filenameLeft = "FileLeft.csv";
 std::string filenameRight = "FileRight.csv";
 //std::string filenameCardio = "FileCardio.csv";
+std::string filenameLeftPowerForce = "FileLeftPowerForce.csv";
+std::string filenameRightPowerForce = "FileRightPowerForce.csv";
+
+std::vector<double> leftPowerVector;
+std::vector<double> rightPowerVector;
+
+int sumLeftPowerVector = 0;
+int sumRightPowerVector = 0;
+
+double Angle_old_left = 0.0;
+double Angle_old_right = 0.0;
 
 bool ok_pleft = 0;
 bool ok_pright = 0;
@@ -135,6 +148,8 @@ ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
     // OpenFileLeft();
     // OpenFileRight();
     // OpenFileCardio();
+    // OpenFileLeftPowerForce();
+    // OpenFileRightPowerForce();
 }
 
 void ConcurrentBtle::startSearch()
@@ -435,6 +450,27 @@ void writeFileLeft(qint16 parameter1){
 
 }
 
+void OpenFileLeftPowerForce()
+{
+    // Get system  time
+    time_t t = time(nullptr);
+    struct tm * now = localtime( & t );
+    char buffer [80];
+
+    // Log directory
+    filenameLeftPowerForce = strftime (buffer,80,"/home/pi/Desktop/FilePedaliCamilla/LeftPowerForceAcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
+    CSVfileLeftPowerForce.open(buffer);
+    // write the file headers
+    if(CSVfileLeftPowerForce.is_open())
+    {
+        CSVfileLeftPowerForce << std::endl << "Left power from force" << std::endl;
+    }
+    else if (!CSVfileLeftPowerForce.is_open()) {
+        std::cout << "Error: Unable to open the file " << filenameLeftPowerForce << std::endl;
+        return;
+    }
+}
+
 void ConcurrentBtle::setupNotificationLeft(QLowEnergyController *device, const QString &name)
 {
     if (!device)
@@ -472,7 +508,41 @@ void ConcurrentBtle::setupNotificationLeft(QLowEnergyController *device, const Q
     });
 
     connect(service, &QLowEnergyService::characteristicChanged, this, &ConcurrentBtle::getLeftPower);
-   service->discoverDetails();
+    service->discoverDetails();
+
+   // hook up force sensor
+    // QLowEnergyService *forceService = device->createServiceObject(QBluetoothUuid(QStringLiteral("7f510001-1b15-11e5-b60b-1697f925ec7b")));
+    // if (!forceService) {
+    //     qDebug() << "***********" << name << "force service not found";
+    //     return;
+    // }
+
+    // qDebug() << "#####" << name << forceService->serviceName() << forceService->serviceUuid();
+
+    // connect(forceService, &QLowEnergyService::stateChanged,
+    //         this, [name, forceService](QLowEnergyService::ServiceState s){
+    //     if (s == QLowEnergyService::ServiceDiscovered) {
+    //         qDebug() << "***********" << name << "force service discovered" << forceService->serviceUuid();
+    //         const QLowEnergyCharacteristic forceTempData = forceService->characteristic(QBluetoothUuid(QStringLiteral("7f510019-1b15-11e5-b60b-1697f925ec7b")));
+
+    //         if (!forceTempData.isValid()) {
+    //             qDebug() << "***********" << name << "force char not valid";
+    //             return;
+    //         }
+
+    //         const QLowEnergyDescriptor forceNotification = forceTempData.descriptor(
+    //                     QBluetoothUuid(QBluetoothUuid::ClientCharacteristicConfiguration));
+
+    //         if (!forceNotification.isValid()) {
+    //             qDebug() << "***********" << name << "force notification not valid";
+    //             return;
+    //         }
+    //         forceService->writeDescriptor(forceNotification, QByteArray::fromHex("0100"));
+    //     }
+    // });
+
+    // connect(forceService, &QLowEnergyService::characteristicChanged, this, &ConcurrentBtle::getLeftForce);
+    // forceService->discoverDetails();
 }
 
 void ConcurrentBtle::getLeftPower(const QLowEnergyCharacteristic &characteristic, const QByteArray &newValue)
@@ -507,6 +577,73 @@ void ConcurrentBtle::getLeftPower(const QLowEnergyCharacteristic &characteristic
 
 }
 
+void ConcurrentBtle::getLeftForce(const QLowEnergyCharacteristic &characteristic, const QByteArray &newValue)
+{
+    const char *data = newValue.constData();
+
+    // Force characteristic
+    // valid data set count U8
+    quint8 flags = data[3];
+    //qDebug() << "Valid data set count" << flags;
+
+ //prendo il primo valore che mi invia per calcolare il power output
+ //prendo forza tangenziale e la moltiplica per la lunghezza della pedivella (ottengo la coppia) e poi lo moltiplico per la cadenza
+        
+    // Tangential force
+    qint16 *TFpo = (qint16 *) &data[8];
+    double TF_left = (double)(*TFpo)/10;
+    //qDebug() << "Left TF value:" << TF_left << "N";
+    //leftForceVector.push_back(TF_left);
+
+    qint16 *cadpo = (qint16 *) &data[14];
+    double cadence = (double)(*cadpo)/1024;
+    double cadence_value=(double)(*cadpo)/1024*30/3.14;
+    //qDebug() << "Cadence value:" << cadence_value <<"rpm";
+
+    qint16 *angpo = (qint16 *) &data[12];
+    double angle = (double)(*angpo);
+    //qDebug() << "Angle left: " << angle << "degrees";
+
+    double powerLeft = TF_left*(-cadence)*155/1000;
+    //qDebug() << "Instantaneous Power Output Left:" << powerLeft <<"W";
+    powerOutputLeft(powerLeft, angle);
+    
+}
+
+void powerOutputLeft (double power,  double angle){
+
+    //qDebug() << "Left instant power: " << power << "W";
+    int averageLeftPower;
+
+    double diff = (angle + 359) - Angle_old_left;
+
+    if ((angle >= Angle_old_left) || ((angle < Angle_old_left) && (diff >= Angle_old_left)))
+    {
+        leftPowerVector.push_back(power);
+        //qDebug() << "Numbers of power data: " << leftPowerVector.size();
+    }
+    else if(angle < Angle_old_left) 
+    {
+        //if new cycle
+        if (diff < Angle_old_left)
+        { 
+            for (int element : leftPowerVector) {
+                sumLeftPowerVector += element;
+            }
+            //qDebug() << "Sum elements power vector " << dec << sumLeftPowerVector << "W";
+            //qDebug() << "Number elements power vector " << leftPowerVector.size();
+            int size = (int)leftPowerVector.size();
+            averageLeftPower = sumLeftPowerVector / size;
+            //qDebug() << "Average left power in one cycle: " << averageLeftPower << "W";
+            CSVfileLeftPowerForce << std::endl << averageLeftPower;
+            leftPowerVector.clear();
+            size = 0;
+            sumLeftPowerVector = 0;
+        }
+    }
+    Angle_old_left = angle;
+}
+
 void OpenFileRight()
 {
     // Get system  time
@@ -528,6 +665,27 @@ void OpenFileRight()
     }
 }
 
+void OpenFileRightPowerForce()
+{
+    // Get system  time
+    time_t t = time(nullptr);
+    struct tm * now = localtime( & t );
+    char buffer [80];
+
+    // Log directory
+    filenameRightPowerForce = strftime (buffer,80,"/home/pi/Desktop/FilePedaliCamilla/RightPowerForceAcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
+    CSVfileRightPowerForce.open(buffer);
+    // write the file headers
+    if(CSVfileRightPowerForce.is_open())
+    {
+        CSVfileRightPowerForce << std::endl << "Right power from force" << std::endl;
+    }
+    else if (!CSVfileRightPowerForce.is_open()) {
+        std::cout << "Error: Unable to open the file " << filenameRightPowerForce << std::endl;
+        return;
+    }
+}
+
 void writeFileRight(qint16 parameter1){
     // clock_gettime ( CLOCK_MONOTONIC, &timeLoop);
     CSVfileRight << std::endl << parameter1;
@@ -540,40 +698,74 @@ void ConcurrentBtle::setupNotificationRight(QLowEnergyController *device, const 
     if (!device)
         return;
 
-    // hook up power sensor
-    QLowEnergyService *service = device->createServiceObject(QBluetoothUuid::CyclingPower);
-    if (!service) {
-        qDebug() << "***********" << name << "power service not found";
+    // // hook up power sensor
+    // QLowEnergyService *service = device->createServiceObject(QBluetoothUuid::CyclingPower);
+    // if (!service) {
+    //     qDebug() << "***********" << name << "power service not found";
+    //     return;
+    // }
+
+    // qDebug() << "#####" << name << service->serviceName() << service->serviceUuid();
+
+    // connect(service, &QLowEnergyService::stateChanged,
+    //         this, [name, service](QLowEnergyService::ServiceState s){
+    //     if (s == QLowEnergyService::ServiceDiscovered) {
+    //         qDebug() << "***********" << name << "power service discovered" << service->serviceUuid();
+    //         const QLowEnergyCharacteristic tempData = service->characteristic(QBluetoothUuid::CyclingPowerMeasurement);     
+
+    //         if (!tempData.isValid()) {
+    //             qDebug() << "***********" << name << "power char not valid";
+    //             return;
+    //         }
+
+    //         const QLowEnergyDescriptor notification = tempData.descriptor(
+    //                     QBluetoothUuid(QBluetoothUuid::ClientCharacteristicConfiguration));
+    //         if (!notification.isValid()) {
+    //             qDebug() << "***********" << name << "power notification not valid";
+    //             return;
+    //         }
+
+    //         service->writeDescriptor(notification, QByteArray::fromHex("0100"));
+
+    //     }
+    // });
+
+    // connect(service, &QLowEnergyService::characteristicChanged, this, &ConcurrentBtle::getRightPower);
+    // service->discoverDetails();
+
+    // hook up force sensor
+    QLowEnergyService *forceService = device->createServiceObject(QBluetoothUuid(QStringLiteral("7f510001-1b15-11e5-b60b-1697f925ec7b")));
+    if (!forceService) {
+        qDebug() << "***********" << name << "force service not found";
         return;
     }
 
-    qDebug() << "#####" << name << service->serviceName() << service->serviceUuid();
+    qDebug() << "#####" << name << forceService->serviceName() << forceService->serviceUuid();
 
-    connect(service, &QLowEnergyService::stateChanged,
-            this, [name, service](QLowEnergyService::ServiceState s){
+    connect(forceService, &QLowEnergyService::stateChanged,
+            this, [name, forceService](QLowEnergyService::ServiceState s){
         if (s == QLowEnergyService::ServiceDiscovered) {
-            qDebug() << "***********" << name << "power service discovered" << service->serviceUuid();
-            const QLowEnergyCharacteristic tempData = service->characteristic(QBluetoothUuid::CyclingPowerMeasurement);     
+            qDebug() << "***********" << name << "force service discovered" << forceService->serviceUuid();
+            const QLowEnergyCharacteristic forceTempData = forceService->characteristic(QBluetoothUuid(QStringLiteral("7f510019-1b15-11e5-b60b-1697f925ec7b")));
 
-            if (!tempData.isValid()) {
-                qDebug() << "***********" << name << "power char not valid";
+            if (!forceTempData.isValid()) {
+                qDebug() << "***********" << name << "force char not valid";
                 return;
             }
 
-            const QLowEnergyDescriptor notification = tempData.descriptor(
+            const QLowEnergyDescriptor forceNotification = forceTempData.descriptor(
                         QBluetoothUuid(QBluetoothUuid::ClientCharacteristicConfiguration));
-            if (!notification.isValid()) {
-                qDebug() << "***********" << name << "power notification not valid";
+
+            if (!forceNotification.isValid()) {
+                qDebug() << "***********" << name << "force notification not valid";
                 return;
             }
-
-            service->writeDescriptor(notification, QByteArray::fromHex("0100"));
-
+            forceService->writeDescriptor(forceNotification, QByteArray::fromHex("0100"));
         }
     });
 
-    connect(service, &QLowEnergyService::characteristicChanged, this, &ConcurrentBtle::getRightPower);
-    service->discoverDetails();
+    connect(forceService, &QLowEnergyService::characteristicChanged, this, &ConcurrentBtle::getRightForce);
+    forceService->discoverDetails();
 }
 
 void ConcurrentBtle::getRightPower(const QLowEnergyCharacteristic &characteristic, const QByteArray &newValue)
@@ -605,7 +797,67 @@ void ConcurrentBtle::getRightPower(const QLowEnergyCharacteristic &characteristi
         // Reset the counter of cyles done
         num_right_data = 0;
     }
+}
 
+void ConcurrentBtle::getRightForce(const QLowEnergyCharacteristic &characteristic, const QByteArray &newValue)
+{
+    const char *data = newValue.constData();
+
+    // Force characteristic
+    // valid data set count U8
+    quint8 flags = data[3];
+    //qDebug() << "Valid data set count" << flags;
+
+ //prendo il primo valore che mi invia per calcolare il power output
+ //prendo forza tangenziale e la moltiplica per la lunghezza della pedivella (ottengo la coppia) e poi lo moltiplico per la cadenza
+        
+    // Tangential force
+    qint16 *TFpo = (qint16 *) &data[8];
+    double TF_right = (double)(*TFpo)/10;
+    //qDebug() << "Right TF value:" << TF_right << "N";
+    //rightForceVector.push_back(TF_right);
+
+    qint16 *cadpo = (qint16 *) &data[14];
+    double cadence = (double)(*cadpo)/1024;
+    //qDebug() << "Cadence value:" << (double)(*cadpo)/1024*30/3.14 <<"rpm";
+
+    qint16 *angpo = (qint16 *) &data[12];
+    double angle = (double)(*angpo);
+
+    double powerRight = TF_right*cadence*155/1000;
+    //qDebug() << "Instantaneous Power Output Right:" << powerRight <<"W";
+    powerOutputRight(powerRight, angle);
+    
+}
+
+void powerOutputRight (double power, double angle){
+
+    int averageRightPower;
+
+    double diff = (angle + 359) - Angle_old_right;
+
+    if ((angle >= Angle_old_right) || ((angle < Angle_old_right) && (diff >= Angle_old_right)))
+    {
+        rightPowerVector.push_back(power);
+    }
+    else if(angle < Angle_old_right) 
+    {
+        //if new cycle
+        if (diff < Angle_old_right)
+        { 
+            for (int element : rightPowerVector) {
+                sumRightPowerVector += element;
+            }
+            int size = (int)rightPowerVector.size();
+            averageRightPower = sumRightPowerVector / size;
+            qDebug() << "Average right power in one cycle: " << averageRightPower << "W";
+            CSVfileRightPowerForce << std::endl << averageRightPower;
+            rightPowerVector.clear();
+            size = 0;
+            sumRightPowerVector = 0;
+        }
+    }
+    Angle_old_right = angle;
 }
 
 // void OpenFileCardio()

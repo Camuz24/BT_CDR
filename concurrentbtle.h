@@ -18,6 +18,11 @@ void OpenFileRight();
 void writeFileRight(qint16 parameter1);
 // void OpenFileCardio();
 // void writeFileCardio(double parameter1);
+void OpenFileLeftPowerForce();
+void OpenFileRightPowerForce();
+void powerOutputRight (double power,  double angle);
+void powerOutputLeft (double power,  double angle);
+
 
 class ConcurrentBtle : public QObject
 {
@@ -32,6 +37,10 @@ public:
     bool newLeftData = false;
     bool newRightData = false;
 
+    vector<double> leftForceVector;
+    vector<double> rightForceVector;
+
+
 signals:
 
 public slots:
@@ -43,6 +52,8 @@ public slots:
     void reconnectDevice();
     void getLeftPower(const QLowEnergyCharacteristic &characteristic, const QByteArray &newValue);
     void getRightPower(const QLowEnergyCharacteristic &characteristic, const QByteArray &newValue);
+    void getLeftForce(const QLowEnergyCharacteristic &characteristic, const QByteArray &newValue);
+    void getRightForce(const QLowEnergyCharacteristic &characteristic, const QByteArray &newValue);
 
 private:
     QBluetoothDeviceDiscoveryAgent *agent = nullptr;
