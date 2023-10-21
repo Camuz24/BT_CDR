@@ -12,6 +12,9 @@
 
 #define NUM_CYCLES 5
 
+SingletonSM* singletonSM = SingletonSM::getInstance();
+shared_memory* shmem = singletonSM->get_SM();
+
 ofstream CSVfileLeft; //dato grezzo pedale sinistro ed efficiency
 ofstream CSVfileRight; //dato grezzo pedale destro ed efficiency
 //ofstream CSVfileCardio; //dato grezzo cardio
@@ -477,72 +480,72 @@ void ConcurrentBtle::setupNotificationLeft(QLowEnergyController *device, const Q
         return;
 
     // hook up power sensor
-    QLowEnergyService *service = device->createServiceObject(QBluetoothUuid::CyclingPower);
-    if (!service) {
-        qDebug() << "***********" << name << "power service not found";
-        return;
-    }
-
-    qDebug() << "#####" << name << service->serviceName() << service->serviceUuid();
-
-    connect(service, &QLowEnergyService::stateChanged,
-            this, [name, service](QLowEnergyService::ServiceState s){
-        if (s == QLowEnergyService::ServiceDiscovered) {
-            qDebug() << "***********" << name << "power service discovered" << service->serviceUuid();
-            const QLowEnergyCharacteristic tempData = service->characteristic(QBluetoothUuid::CyclingPowerMeasurement);
-
-            if (!tempData.isValid()) {
-                qDebug() << "***********" << name << "power char not valid";
-                return;
-            }
-
-            const QLowEnergyDescriptor notification = tempData.descriptor(
-                        QBluetoothUuid(QBluetoothUuid::ClientCharacteristicConfiguration));
-
-            if (!notification.isValid()) {
-                qDebug() << "***********" << name << "power notification not valid";
-                return;
-            }
-            service->writeDescriptor(notification, QByteArray::fromHex("0100"));
-        }
-    });
-
-    connect(service, &QLowEnergyService::characteristicChanged, this, &ConcurrentBtle::getLeftPower);
-    service->discoverDetails();
-
-   // hook up force sensor
-    // QLowEnergyService *forceService = device->createServiceObject(QBluetoothUuid(QStringLiteral("7f510001-1b15-11e5-b60b-1697f925ec7b")));
-    // if (!forceService) {
-    //     qDebug() << "***********" << name << "force service not found";
+    // QLowEnergyService *service = device->createServiceObject(QBluetoothUuid::CyclingPower);
+    // if (!service) {
+    //     qDebug() << "***********" << name << "power service not found";
     //     return;
     // }
 
-    // qDebug() << "#####" << name << forceService->serviceName() << forceService->serviceUuid();
+    // qDebug() << "#####" << name << service->serviceName() << service->serviceUuid();
 
-    // connect(forceService, &QLowEnergyService::stateChanged,
-    //         this, [name, forceService](QLowEnergyService::ServiceState s){
+    // connect(service, &QLowEnergyService::stateChanged,
+    //         this, [name, service](QLowEnergyService::ServiceState s){
     //     if (s == QLowEnergyService::ServiceDiscovered) {
-    //         qDebug() << "***********" << name << "force service discovered" << forceService->serviceUuid();
-    //         const QLowEnergyCharacteristic forceTempData = forceService->characteristic(QBluetoothUuid(QStringLiteral("7f510019-1b15-11e5-b60b-1697f925ec7b")));
+    //         qDebug() << "***********" << name << "power service discovered" << service->serviceUuid();
+    //         const QLowEnergyCharacteristic tempData = service->characteristic(QBluetoothUuid::CyclingPowerMeasurement);
 
-    //         if (!forceTempData.isValid()) {
-    //             qDebug() << "***********" << name << "force char not valid";
+    //         if (!tempData.isValid()) {
+    //             qDebug() << "***********" << name << "power char not valid";
     //             return;
     //         }
 
-    //         const QLowEnergyDescriptor forceNotification = forceTempData.descriptor(
+    //         const QLowEnergyDescriptor notification = tempData.descriptor(
     //                     QBluetoothUuid(QBluetoothUuid::ClientCharacteristicConfiguration));
 
-    //         if (!forceNotification.isValid()) {
-    //             qDebug() << "***********" << name << "force notification not valid";
+    //         if (!notification.isValid()) {
+    //             qDebug() << "***********" << name << "power notification not valid";
     //             return;
     //         }
-    //         forceService->writeDescriptor(forceNotification, QByteArray::fromHex("0100"));
+    //         service->writeDescriptor(notification, QByteArray::fromHex("0100"));
     //     }
     // });
 
-    // connect(forceService, &QLowEnergyService::characteristicChanged, this, &ConcurrentBtle::getLeftForce);
-    // forceService->discoverDetails();
+    // connect(service, &QLowEnergyService::characteristicChanged, this, &ConcurrentBtle::getLeftPower);
+    // service->discoverDetails();
+
+   // hook up force sensor
+    QLowEnergyService *forceService = device->createServiceObject(QBluetoothUuid(QStringLiteral("7f510001-1b15-11e5-b60b-1697f925ec7b")));
+    if (!forceService) {
+        qDebug() << "***********" << name << "force service not found";
+        return;
+    }
+
+    qDebug() << "#####" << name << forceService->serviceName() << forceService->serviceUuid();
+
+    connect(forceService, &QLowEnergyService::stateChanged,
+            this, [name, forceService](QLowEnergyService::ServiceState s){
+        if (s == QLowEnergyService::ServiceDiscovered) {
+            qDebug() << "***********" << name << "force service discovered" << forceService->serviceUuid();
+            const QLowEnergyCharacteristic forceTempData = forceService->characteristic(QBluetoothUuid(QStringLiteral("7f510019-1b15-11e5-b60b-1697f925ec7b")));
+
+            if (!forceTempData.isValid()) {
+                qDebug() << "***********" << name << "force char not valid";
+                return;
+            }
+
+            const QLowEnergyDescriptor forceNotification = forceTempData.descriptor(
+                        QBluetoothUuid(QBluetoothUuid::ClientCharacteristicConfiguration));
+
+            if (!forceNotification.isValid()) {
+                qDebug() << "***********" << name << "force notification not valid";
+                return;
+            }
+            forceService->writeDescriptor(forceNotification, QByteArray::fromHex("0100"));
+        }
+    });
+
+    connect(forceService, &QLowEnergyService::characteristicChanged, this, &ConcurrentBtle::getLeftForce);
+    forceService->discoverDetails();
 }
 
 void ConcurrentBtle::getLeftPower(const QLowEnergyCharacteristic &characteristic, const QByteArray &newValue)
@@ -635,6 +638,7 @@ void powerOutputLeft (double power,  double angle){
             int size = (int)leftPowerVector.size();
             averageLeftPower = sumLeftPowerVector / size;
             //qDebug() << "Average left power in one cycle: " << averageLeftPower << "W";
+            write_left_power(averageLeftPower);
             CSVfileLeftPowerForce << std::endl << averageLeftPower;
             leftPowerVector.clear();
             size = 0;
@@ -850,7 +854,8 @@ void powerOutputRight (double power, double angle){
             }
             int size = (int)rightPowerVector.size();
             averageRightPower = sumRightPowerVector / size;
-            qDebug() << "Average right power in one cycle: " << averageRightPower << "W";
+            //qDebug() << "Average right power in one cycle: " << averageRightPower << "W";
+            write_right_power(averageRightPower);
             CSVfileRightPowerForce << std::endl << averageRightPower;
             rightPowerVector.clear();
             size = 0;
