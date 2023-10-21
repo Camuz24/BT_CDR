@@ -155,7 +155,7 @@ void ConcurrentBtle::establishConnection()
     if (!device1) {
         std::cout << "establishing connection device 1" << std::endl;
 
-        for (int i=0;i<3;i++) {
+        for (int i=0;i<2;i++) {
             if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")))     //Colombo
 //            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")))       //Lecco
                 device1 = new QLowEnergyController(desiredDevices.at(i));
@@ -197,7 +197,7 @@ void ConcurrentBtle::establishConnection()
     if (!device2 && desiredDevices.count() >= 2) {
         std::cout << "establishing connection device 2" << std::endl;
 
-        for (int i=0;i<3;i++) {
+        for (int i=0;i<2;i++) {
             if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")))     //Colombo
 //            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")))     //Lecco
             device2 = new QLowEnergyController(desiredDevices.at(i));
