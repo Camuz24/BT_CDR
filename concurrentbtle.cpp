@@ -434,7 +434,7 @@ void OpenFileLeft()
     char buffer [80];
 
     // Log directory
-    filenameLeft = strftime (buffer,80,"/home/pi/Desktop/FilePedaliCamilla/LeftAcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
+    filenameLeft = strftime (buffer,80,"/home/pi/Desktop/BT_CDR/DatiPedali_forcePower/LeftAcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
     CSVfileLeft.open(buffer);
     // write the file headers
     if(CSVfileLeft.is_open())
@@ -461,7 +461,7 @@ void OpenFileLeftPowerForce()
     char buffer [80];
 
     // Log directory
-    filenameLeftPowerForce = strftime (buffer,80,"/home/pi/Desktop/FilePedaliCamilla/LeftPowerForceAcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
+    filenameLeftPowerForce = strftime (buffer,80,"/home/pi/Desktop/BT_CDR/DatiPedali_forcePower/LeftPowerForceAcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
     CSVfileLeftPowerForce.open(buffer);
     // write the file headers
     if(CSVfileLeftPowerForce.is_open())
@@ -656,7 +656,7 @@ void OpenFileRight()
     char buffer [80];
 
     // Log directory
-    filenameRight = strftime (buffer,80,"/home/pi/Desktop/FilePedaliCamilla/RightAcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
+    filenameRight = strftime (buffer,80,"/home/pi/Desktop/BT_CDR/DatiPedali_forcePower/RightAcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
     CSVfileRight.open(buffer);
     // write the file headers
     if(CSVfileRight.is_open())
@@ -677,7 +677,7 @@ void OpenFileRightPowerForce()
     char buffer [80];
 
     // Log directory
-    filenameRightPowerForce = strftime (buffer,80,"/home/pi/Desktop/FilePedaliCamilla/RightPowerForceAcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
+    filenameRightPowerForce = strftime (buffer,80,"/home/pi/Desktop/BT_CDR/DatiPedali_forcePower/RightPowerForceAcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
     CSVfileRightPowerForce.open(buffer);
     // write the file headers
     if(CSVfileRightPowerForce.is_open())
@@ -873,7 +873,7 @@ void powerOutputRight (double power, double angle){
 //     char buffer [80];
 
 //     // Log directory
-//     filenameCardio = strftime (buffer,80,"/home/pi/Desktop/FilePedaliCamilla/CardioAcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
+//     filenameCardio = strftime (buffer,80,"/home/pi/Desktop/BT_CDR/DatiPedali_forcePower/CardioAcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
 //     CSVfileCardio.open(buffer);
 //     // write the file headers
 //     if(CSVfileCardio.is_open())
