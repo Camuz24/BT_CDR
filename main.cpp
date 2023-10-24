@@ -64,7 +64,10 @@ void myInterruptHandler (int signum) {
 
 void powerControl()
 {
-    int totalPower;
+    SingletonSM* singletonSM = SingletonSM::getInstance();
+    shared_memory* shmem = singletonSM->get_SM();
+
+    int totalPower = 0;
     float powerPidOutput = 0;
 
     struct timespec t_now;
@@ -82,9 +85,6 @@ void powerControl()
     // pause_duration defines duration of pause considered when a buttton is pressed (1 s in this case)
 
     clock_gettime( CLOCK_MONOTONIC, &t_next);
-
-    SingletonSM* singletonSM = SingletonSM::getInstance();
-    shared_memory* shmem = singletonSM->get_SM();
 
     while(1)
     {

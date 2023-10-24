@@ -25,5 +25,6 @@
 #define STIMULATOR_PULSEWIDTH "y" //
 #define LEFT_POWER            "z" //
 #define RIGHT_POWER           "aa" //
-#define GEAR                  "bb" //
-#define SINGLE_TARGET_POWER   "cc"
+#define TOTAL_POWER           "bb" //
+#define SINGLE_TARGET_POWER   "cc" //
+#define GEAR                  "dd" //
