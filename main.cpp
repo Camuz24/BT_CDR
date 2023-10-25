@@ -137,18 +137,18 @@ void powerControl()
             {
                 if(shmem->data->new_left_data && shmem->data->new_right_data)
                 { 
-                    totalPower = btle->instantaneousLeftPower + btle->instantaneousRightPower;
+                    totalPower = shmem->data->average_left_power + shmem->data->average_right_power;
                     shmem->data->total_power = totalPower;
                     cout << "Total power (left + right) over one cycle:" << totalPower << endl;
                     powerPidOutput = FEScontrol.PID(totalTargetPower, totalPower);
                     shmem->data->pid_coeff = (double)powerPidOutput;
                     cout << "Pid coefficient:" << powerPidOutput << endl;
                     
-                    current_toSum = powerPidOutput * (100 - fake_current);
-                    if(current_toSum + fake_current <= 100)  actual_fake_current =  current_toSum + fake_current;
-                    else actual_fake_current = 100;
+                    // current_toSum = powerPidOutput * (100 - fake_current);
+                    // if(current_toSum + fake_current <= 100)  actual_fake_current =  current_toSum + fake_current;
+                    // else actual_fake_current = 100;
                     
-                    fake_current = actual_fake_current;
+                    // fake_current = actual_fake_current;
                     //cout << "Fake current output: " << actual_fake_current << endl;
 
                     powerControlFile << endl << fixed << setprecision(2) << powerPidOutput << ",\t" << totalPower << ",\t" << actual_fake_current << ",\t" << shmem->data->gear << ",\t" << cadence;

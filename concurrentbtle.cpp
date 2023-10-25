@@ -75,10 +75,10 @@ ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
 {
     //std::system("hciconfig hci1 down");     //Disable the Internal Bluetooth Adapter
     //std::system("btattach -B hci0 -P public -S 115200 /dev/ttyUSB0");     //Set the USB Dongle as the Default Adapter
-    desiredDevices << QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")); /*SRM_XP_L_1818     Colombo*/
-//    desiredDevices << QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")); /*SRM_XP_L_2623   Lecco*/
-    desiredDevices << QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")); /*SRM_XP_R_1968     Colombo*/
-//    desiredDevices << QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")); /*SRM_XP_R_2971   Lecco*/
+//    desiredDevices << QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")); /*SRM_XP_L_1818     Colombo*/
+    desiredDevices << QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")); /*SRM_XP_L_2623   Lecco*/
+//    desiredDevices << QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")); /*SRM_XP_R_1968     Colombo*/
+    desiredDevices << QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")); /*SRM_XP_R_2971   Lecco*/
 //    desiredDevices << QBluetoothAddress(QStringLiteral("C8:75:75:F8:F1:CC")); /*Polar H10 8E5AB228*/ //C8:75:75:F8:F1:FA
 
     agent = new QBluetoothDeviceDiscoveryAgent(this);
@@ -174,8 +174,8 @@ void ConcurrentBtle::establishConnection()
         std::cout << "establishing connection device 1" << std::endl;
 
         for (int i=0;i<2;i++) {
-            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")))     //Colombo
-//            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")))       //Lecco
+//            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")))     //Colombo
+            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")))       //Lecco
                 device1 = new QLowEnergyController(desiredDevices.at(i));
         }
         device1->setParent(this);
@@ -216,8 +216,8 @@ void ConcurrentBtle::establishConnection()
         std::cout << "establishing connection device 2" << std::endl;
 
         for (int i=0;i<2;i++) {
-            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")))     //Colombo
-//            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")))     //Lecco
+//            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")))     //Colombo
+            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")))     //Lecco
             device2 = new QLowEnergyController(desiredDevices.at(i));
         }
         device2->setParent(this);
@@ -607,7 +607,8 @@ void ConcurrentBtle::getLeftForce(const QLowEnergyCharacteristic &characteristic
     double angle = (double)(*angpo);
     //qDebug() << "Angle left: " << angle << "degrees";
 
-    double powerLeft = TF_left*(-cadence)*155/1000;
+    int cranck_length = 165;
+    double powerLeft = TF_left*(-cadence)*cranck_length/1000;
     //qDebug() << "Instantaneous Power Output Left:" << powerLeft <<"W";
     powerOutputLeft(powerLeft, angle);
     
@@ -640,6 +641,7 @@ void powerOutputLeft (double power,  double angle){
             //qDebug() << "Number elements power vector " << leftPowerVector.size();
             int size = (int)leftPowerVector.size();
             averageLeftPower = sumLeftPowerVector / size;
+            shmem->data->average_left_power = averageLeftPower;
             shmem->data->new_left_data = true;
             //qDebug() << "Average left power in one cycle: " << averageLeftPower << "W";
             write_left_power(averageLeftPower);
@@ -832,7 +834,8 @@ void ConcurrentBtle::getRightForce(const QLowEnergyCharacteristic &characteristi
     qint16 *angpo = (qint16 *) &data[12];
     double angle = (double)(*angpo);
 
-    double powerRight = TF_right*cadence*155/1000;
+    int crank_length = 165;
+    double powerRight = TF_right*cadence*crank_length/1000;
     //qDebug() << "Instantaneous Power Output Right:" << powerRight <<"W";
     powerOutputRight(powerRight, angle);
     
@@ -862,6 +865,7 @@ void powerOutputRight (double power, double angle){
             int size = (int)rightPowerVector.size();
             averageRightPower = sumRightPowerVector / size;
             //qDebug() << "Average right power in one cycle: " << averageRightPower << "W";
+            shmem->data->average_right_power = averageRightPower;
             shmem->data->new_right_data = true;
             write_right_power(averageRightPower);
             CSVfileRightPowerForce << std::endl << averageRightPower;
