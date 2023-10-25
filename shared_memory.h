@@ -99,6 +99,8 @@ class shared_memory
         double pid_coeff = 0;
         float total_target_power = 0;
         int total_power = 0;
+        bool new_left_data = false;
+        bool new_right_data = false;
 
         double theorCurrentsR[4]={0};
         double theorCurrentsL[4]={0};

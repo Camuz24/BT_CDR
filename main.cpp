@@ -135,7 +135,7 @@ void powerControl()
         {
             if(shmem->data->pid)
             {
-                if(btle->newLeftData && btle->newRightData)
+                if(shmem->data->new_left_data && shmem->data->new_right_data)
                 { 
                     totalPower = btle->instantaneousLeftPower + btle->instantaneousRightPower;
                     shmem->data->total_power = totalPower;
@@ -153,8 +153,8 @@ void powerControl()
 
                     powerControlFile << endl << fixed << setprecision(2) << powerPidOutput << ",\t" << totalPower << ",\t" << actual_fake_current << ",\t" << shmem->data->gear << ",\t" << cadence;
 
-                    btle->newLeftData = false;
-                    btle->newRightData = false;
+                    shmem->data->new_left_data = false;
+                    shmem->data->new_right_data = false;
                 }
             }
             else    shmem->data->pid_coeff = 0;

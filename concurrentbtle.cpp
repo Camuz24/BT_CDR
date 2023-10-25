@@ -615,6 +615,9 @@ void ConcurrentBtle::getLeftForce(const QLowEnergyCharacteristic &characteristic
 
 void powerOutputLeft (double power,  double angle){
 
+    SingletonSM* singletonSM = SingletonSM::getInstance();
+    shared_memory* shmem = singletonSM->get_SM();
+    
     //qDebug() << "Left instant power: " << power << "W";
     int averageLeftPower;
 
@@ -637,6 +640,7 @@ void powerOutputLeft (double power,  double angle){
             //qDebug() << "Number elements power vector " << leftPowerVector.size();
             int size = (int)leftPowerVector.size();
             averageLeftPower = sumLeftPowerVector / size;
+            shmem->data->new_left_data = true;
             //qDebug() << "Average left power in one cycle: " << averageLeftPower << "W";
             write_left_power(averageLeftPower);
             CSVfileLeftPowerForce << std::endl << averageLeftPower;
@@ -836,6 +840,9 @@ void ConcurrentBtle::getRightForce(const QLowEnergyCharacteristic &characteristi
 
 void powerOutputRight (double power, double angle){
 
+    SingletonSM* singletonSM = SingletonSM::getInstance();
+    shared_memory* shmem = singletonSM->get_SM();
+
     int averageRightPower;
 
     double diff = (angle + 359) - Angle_old_right;
@@ -855,6 +862,7 @@ void powerOutputRight (double power, double angle){
             int size = (int)rightPowerVector.size();
             averageRightPower = sumRightPowerVector / size;
             //qDebug() << "Average right power in one cycle: " << averageRightPower << "W";
+            shmem->data->new_right_data = true;
             write_right_power(averageRightPower);
             CSVfileRightPowerForce << std::endl << averageRightPower;
             rightPowerVector.clear();
