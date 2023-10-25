@@ -104,6 +104,8 @@ class shared_memory
         int total_power = 0;
         int left_power = 0;
         int right_power = 0;
+        bool new_right_data = false;
+        bool new_left_data = false;
 
         double theorCurrentsR[4]={0};
         double theorCurrentsL[4]={0};

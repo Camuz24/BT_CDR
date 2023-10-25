@@ -96,7 +96,7 @@ void powerControl()
         {
             if(shmem->data->pid)
             {
-                if(btle->newLeftData)
+                if(shmem->data->new_left_data)
                 { 
                     leftPower = btle->instantaneousLeftPower;
                     shmem->data->left_power = leftPower;
@@ -119,10 +119,10 @@ void powerControl()
                                                                          << shmem->data->gear << ",\t" 
                                                                          << cadence;
 
-                    btle->newLeftData = false;
+                    shmem->data->new_left_data = false;
                 }
 
-                if(btle->newRightData)
+                if(shmem->data->new_right_data)
                 { 
                     rightPower = btle->instantaneousRightPower;
                     shmem->data->right_power = rightPower;
@@ -143,7 +143,7 @@ void powerControl()
                                                                          << rightPower << ",\t"  
                                                                          << shmem->data->gear << ",\t" 
                                                                          << cadence;
-                    btle->newRightData = false;
+                    shmem->data->new_right_data = false;
                 }
             }
             else
