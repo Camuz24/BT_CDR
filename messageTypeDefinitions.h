@@ -8,8 +8,10 @@
 #define CHECK_PEDAL_RIGHT     "h" // 
 #define CHECK_CARDIO          "i" // 
 #define TRG_CAD               "j" // 
-#define PID_PERCENTAGE        "k" // 
-#define CURRENT_PERCENTAGE    "l" // 
+#define LEFT_PID_PERCENTAGE   "k" // 
+#define RIGHT_PID_PERCENTAGE  "kk"//
+#define LEFT_CURRENT_PERCENTAGE  "l"  //
+#define RIGHT_CURRENT_PERCENTAGE "ll" //  
 #define QUAD_L                "m" // 
 #define GLU_L                 "n" // 
 #define HAM_L                 "o" // 

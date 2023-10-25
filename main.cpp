@@ -67,8 +67,10 @@ void powerControl()
     SingletonSM* singletonSM = SingletonSM::getInstance();
     shared_memory* shmem = singletonSM->get_SM();
 
-    int totalPower = 0;
-    float powerPidOutput = 0;
+    int leftPower = 0;
+    int rightPower = 0;
+    float leftPowerPidOutput = 0;
+    float rightPowerPidOutput = 0;
 
     struct timespec t_now;
     struct timespec t_next;
@@ -90,75 +92,65 @@ void powerControl()
     {
         t_next = addition(t_next, t_period); // update t_next (needed for usleep at the end)clock_gettime ( CLOCK_MONOTONIC, &t_now);
 
-        // if(loop_count%200 == 0)
-        // {
-        //     if(prev_angle == -1) //prima iterazione
-        //     {
-        //         prev_angle = angle; //non viene calcolata la cadenza
-        //         control_angle = angle;
-        //     }
-        //     else 
-        //     {
-        //         angle = Encoder.getAngle(); //leggo l'angolo dall'encoder
-        //         cadence = (double)Cadence.computeCadence(prev_angle, angle);
-        //         filtered_cadence = Cadence.filterCadence(cadence, filtered_cadence_old);
-        //         filtered_cadence_old = filtered_cadence;
-        //         cadence_vector.push_back(filtered_cadence);
-        //         cout << "La cadenza attauale è di " << fixed << setprecision(2) << filtered_cadence << endl;
-        //         angle_old = angle;
-
-        //         // compute the mean cadence over 360° cycle
-        //         if(control_angle == angle + 360)
-        //         {
-        //             for (int element : cadence_vector) {
-        //                 sum_cadence_vector += element;
-        //             }
-        //             mean_cadence = sum_cadence_vector / cadence_vector.size();
-        //             cadence_vector.clear();
-        //             control_angle = angle;
-        //         }            
-
-        //         if(mean_cadence < MIN_CADENCE)
-        //         {
-        //             //TODO: disattivare stimolazione
-        //             //Pid.on();             
-        //         }
-        //         else 
-        //         {   //Pid.off();
-        //             //TODO: attivare stimolazione
-        //             FEScontrol.PidON();
-        //         }                      
-        //     }
-        // }
-
         if(loop_count%100 == 0)
         {
             if(shmem->data->pid)
             {
-                if(btle->newLeftData && btle->newRightData)
+                if(btle->newLeftData)
                 { 
-                    totalPower = btle->instantaneousLeftPower + btle->instantaneousRightPower;
-                    shmem->data->total_power = totalPower;
-                    cout << "Total power (left + right) over one cycle:" << totalPower << endl;
-                    powerPidOutput = FEScontrol.PID(totalTargetPower, totalPower);
-                    shmem->data->pid_coeff = (double)powerPidOutput;
-                    cout << "Pid coefficient:" << powerPidOutput << endl;
+                    leftPower = btle->instantaneousLeftPower;
+                    shmem->data->left_power = leftPower;
+                    leftPowerPidOutput = FEScontrol.PID(SINGLE_POWER_TARGET, leftPower);
+                    shmem->data->left_pid_coeff = (double)leftPowerPidOutput;
+                    cout << "Left PID coefficient:" << leftPowerPidOutput << endl;
                     
-                    current_toSum = powerPidOutput * (100 - fake_current);
-                    if(current_toSum + fake_current <= 100)  actual_fake_current =  current_toSum + fake_current;
-                    else actual_fake_current = 100;
+                    // current_toSum = leftPowerPidOutput * (100 - fake_current);
+                    // if(current_toSum + fake_current <= 100)  actual_fake_current =  current_toSum + fake_current;
+                    // else actual_fake_current = 100;
                     
-                    fake_current = actual_fake_current;
+                    // fake_current = actual_fake_current;
                     //cout << "Fake current output: " << actual_fake_current << endl;
 
-                    powerControlFile << endl << fixed << setprecision(2) << powerPidOutput << ",\t" << totalPower << ",\t" << actual_fake_current << ",\t" << shmem->data->gear << ",\t" << cadence;
+                    powerControlFile << endl << fixed << setprecision(2) << leftPowerPidOutput << ",\t" 
+                                                                         << rightPowerPidOutput << ",\t"
+                                                                         << leftPower << ",\t"
+                                                                         << rightPower << ",\t" 
+                                                                         << actual_fake_current << ",\t" 
+                                                                         << shmem->data->gear << ",\t" 
+                                                                         << cadence;
 
                     btle->newLeftData = false;
+                }
+
+                if(btle->newRightData)
+                { 
+                    rightPower = btle->instantaneousRightPower;
+                    shmem->data->right_power = rightPower;
+                    rightPowerPidOutput = FEScontrol.PID(SINGLE_POWER_TARGET, rightPower);
+                    shmem->data->right_pid_coeff = (double)rightPowerPidOutput;
+                    cout << "Right PID coefficient:" << rightPowerPidOutput << endl;
+                    
+                    // current_toSum = rightPowerPidOutput * (100 - fake_current);
+                    // if(current_toSum + fake_current <= 100)  actual_fake_current =  current_toSum + fake_current;
+                    // else actual_fake_current = 100;
+                    
+                    // fake_current = actual_fake_current;
+                    //cout << "Fake current output: " << actual_fake_current << endl;
+
+                    powerControlFile << endl << fixed << setprecision(2) << leftPowerPidOutput << ",\t" 
+                                                                         << rightPowerPidOutput << ",\t"
+                                                                         << leftPower << ",\t"
+                                                                         << rightPower << ",\t"  
+                                                                         << shmem->data->gear << ",\t" 
+                                                                         << cadence;
                     btle->newRightData = false;
                 }
             }
-            else    shmem->data->pid_coeff = 0;
-
+            else
+            {
+               shmem->data->left_pid_coeff = 0;
+               shmem->data->right_pid_coeff = 0;
+            }    
         }
 
         loop_count++;
@@ -206,9 +198,10 @@ int main(int argc, char *argv[]){
     // write the file headers
     if(powerControlFile.is_open())
     {
-        powerControlFile << endl << "PID coefficient" << "," 
-                                 << "Total Power" << "," 
-                                 << "Stimul Current" << ","
+        powerControlFile << endl << "Left PID coefficient" << "," 
+                                 << "Right PID coefficient" << "," 
+                                 << "Left Power" << ","
+                                 << "RIght Power" << "," 
                                  << "Gear" << ","
                                  << "Cadence" << endl;
     }

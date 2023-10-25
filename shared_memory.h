@@ -92,13 +92,18 @@ class shared_memory
         double current_gluteus_right = 0.0;
         double current_gastro_right = 0.0;
 
-        int pid_percentage=0;// da qui in giù
-        int current_percentage=0;
+        int left_pid_percentage=0;// da qui in giù
+        int right_pid_percentage=0;
+        int left_current_percentage=0;
+        int right_current_percentage=0;
         
         // Power control variables
-        double pid_coeff = 0;
+        double left_pid_coeff = 0;
+        double right_pid_coeff = 0;
         float total_target_power = 0;
         int total_power = 0;
+        int left_power = 0;
+        int right_power = 0;
 
         double theorCurrentsR[4]={0};
         double theorCurrentsL[4]={0};
