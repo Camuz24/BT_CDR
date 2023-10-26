@@ -131,6 +131,7 @@ void powerControl()
         //     }
         // }
 
+// CODICE PER ACQUISIZIONE POTENZE DALLA FORCES CHARACTERISTIC
         if(loop_count%100 == 0)
         {
                 if(shmem->data->new_left_data && shmem->data->new_right_data)
@@ -158,6 +159,37 @@ void powerControl()
 
                     shmem->data->new_left_data = false;
                     shmem->data->new_right_data = false;
+                }
+        }
+
+// CODICE PER ACQUISIZIONE POTENZE DALLA POWER CHARACTERISTIC
+        if(loop_count%100 == 0)
+        {
+                if(btle->newLeftData && btle->newRightData)
+                { 
+                    totalPower = btle->instantaneousLeftPower + btle->instantaneousRightPower;
+                    shmem->data->total_power = totalPower;
+                    cout << "Total power (left + right) over one cycle:" << totalPower << endl;
+
+                    if(shmem->data->pid)
+                    {
+                        powerPidOutput = FEScontrol.PID(totalTargetPower, totalPower);
+                        shmem->data->pid_coeff = (double)powerPidOutput;
+                        cout << "Pid coefficient:" << powerPidOutput << endl;
+                    }
+                    else    shmem->data->pid_coeff = 0;
+                                      
+                    // current_toSum = powerPidOutput * (100 - fake_current);
+                    // if(current_toSum + fake_current <= 100)  actual_fake_current =  current_toSum + fake_current;
+                    // else actual_fake_current = 100;
+                    
+                    // fake_current = actual_fake_current;
+                    //cout << "Fake current output: " << actual_fake_current << endl;
+
+                    powerControlFile << endl << fixed << setprecision(2) << powerPidOutput << ",\t" << totalPower << ",\t" << actual_fake_current << ",\t" << shmem->data->gear << ",\t" << cadence;
+
+                    btle->newLeftData = false;
+                    btle->newRightData = false;
                 }
         }
 
