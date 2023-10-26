@@ -163,6 +163,7 @@ void powerControl()
         //         }    
         // }
 
+// CODICE PER ACQUISIZIONE POTENZA DALLA CARATTERISTICA DELLE FORZE
         if(loop_count%100 == 0)
         {
                 if(shmem->data->new_left_data)
