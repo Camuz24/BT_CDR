@@ -1,13 +1,19 @@
 #include "manager.h"
 #include <iostream>
+#include <fstream>
 #include <string>
+#include <sstream>
+#include <algorithm>
+#include <dirent.h>
 #include <vector>
 #include <unistd.h> 
 #include <thread>
+#include <cstring>
 #include "messageTypeDefinitions.h"
 #include <cstdlib> // for std::rand() and std::srand()
 #include <ctime>   // for std::time()
 #include "pugixml-1.13/src/pugixml.hpp"
+#include <algorithm>
 
 using namespace pugi;
 using std::string;
@@ -31,8 +37,10 @@ void manager::writeOnSM(const QString &sender, const QString &message){
     //TODO: if else if ... per scrivere su shared memory
     stopSend = true;
     std::cout << "stop send" << std::endl;
-    xml_document docString;
-    xml_parse_result parsedMessage = docString.load(message.toStdString().c_str());
+    std::cout << message.toStdString().c_str() << std::endl;
+    xml_document doc;
+    xml_parse_result parsedMessage = doc.load_string(message.toStdString().c_str());
+
     string type;
     string payload;
 
@@ -45,33 +53,54 @@ void manager::writeOnSM(const QString &sender, const QString &message){
         return;
     }
 
-    for(auto&& field: docString.children("message")){
-        std::cout << "Received message: " << std::endl;
-        std::cout << "\tType: \t\t" << field.child("type").text().as_string() << std::endl;
-        std::cout << "\tPayload: \t" << field.child("payload").text().as_string() << std::endl;
-         
-        type=field.child("type").text().as_string();
-        payload=field.child("payload").text().as_string();
-    }
+std::cout << "Received message: " << std::endl;
+    xml_node tools = doc.child("message");
 
-    if(type=="upAndDown"){
-        shmem->data->up = payload=="plus";
-        shmem->data->down = payload=="minus";
-    }else if(type=="startAndStop"){
-        shmem->data->start_training = payload=="start";
-    }else if(type=="pid"){
-        shmem->data->pid=payload=="1";
-    }else if(type == "gear"){
-        shmem->data->gear = stoi(payload);
-    }else if(type == "pedals"){
-        std::cout << "Pedals selected: " << payload << std::endl;
-    }else if(type == "trike"){
-        std::cout << "Trike selected: " << payload << std::endl;
+    for (xml_node_iterator it = tools.begin(); it != tools.end(); ++it){
+        for (xml_attribute_iterator ait = it->attributes_begin();
+                ait != it->attributes_end(); ++ait){
+
+            std::stringstream ssName;
+            ssName << ait->name();
+            std::string strName = ssName.str();
+
+            std::stringstream ssValue;
+            ssValue << ait->value();
+            std::string strValue = ssValue.str();
+
+            if(strName == "type"){
+                type=strValue;
+            }
+            if(strName == "payload"){
+                payload=strValue;
+            }
+        }
+
+        //std::cout << std::endl;
+
+        std::cout << "\tType: \t\t" << type << std::endl;
+        std::cout << "\tPayload: \t" << payload << std::endl;
+
+        if(type=="upAndDown"){
+            shmem->data->up = payload=="plus";
+            shmem->data->down = payload=="minus";
+        }else if(type=="startAndStop"){
+            shmem->data->start_training = payload=="start";
+        }else if(type=="pid"){
+            shmem->data->pid=payload=="1";
+        }else if(type == "gear"){
+            shmem->data->gear = stoi(payload);
+        }else if(type == "pedals"){
+            //std::cout << "Pedals selected: " << payload << std::endl;
+        }else if(type == "trike"){
+            //std::cout << "Trike selected: " << payload << std::endl;
+        }
+        
+        stopSend = false;
+        std::cout << "start send" << std::endl;
     }
-    
-    stopSend = false;
-    std::cout << "start send" << std::endl;
 }
+
 /**
  * Read periodically from shared memory and send message to client view
 */
@@ -179,10 +208,8 @@ string manager::buildXMLMessage(const std::vector<string>& types, const std::vec
 
     std::string XMLmsg = "<m>";
     for (size_t i = 0; i < types.size(); ++i) {
-        // XMLmsg += "  <message>\n";
         XMLmsg += "<t>" + types[i] + "</t>";
         XMLmsg += "<p>" + payloads[i] + "</p>";
-        // XMLmsg += "  </message>\n";
     }
     XMLmsg += "</m>";
 
