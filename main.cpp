@@ -92,17 +92,94 @@ void powerControl()
     {
         t_next = addition(t_next, t_period); // update t_next (needed for usleep at the end)clock_gettime ( CLOCK_MONOTONIC, &t_now);
 
+// CODICE PER ACQUISIZIONE POTENZA DALLA CARATTERISTICA DELLA POTENZA
+        // if(loop_count%100 == 0)
+        // {
+        //         if(btle->newLeftData)
+        //         { 
+        //             leftPower = btle->instantaneousLeftPower;
+        //             shmem->data->left_power = leftPower;
+        //             if(shmem->data->pid)
+        //             {
+        //                 leftPowerPidOutput = FEScontrol.PID(SINGLE_POWER_TARGET, leftPower);
+        //                 shmem->data->left_pid_coeff = (double)leftPowerPidOutput;
+        //                 cout << "Left PID coefficient:" << leftPowerPidOutput << endl;
+        //             }
+        //             else
+        //             {
+        //                 shmem->data->left_pid_coeff = 0;
+        //                 shmem->data->right_pid_coeff = 0;
+        //             }
+                    
+        //             // current_toSum = leftPowerPidOutput * (100 - fake_current);
+        //             // if(current_toSum + fake_current <= 100)  actual_fake_current =  current_toSum + fake_current;
+        //             // else actual_fake_current = 100;
+                    
+        //             // fake_current = actual_fake_current;
+        //             //cout << "Fake current output: " << actual_fake_current << endl;
+
+        //             powerControlFile << endl << fixed << setprecision(2) << leftPowerPidOutput << ",\t" 
+        //                                                                  << rightPowerPidOutput << ",\t"
+        //                                                                  << leftPower << ",\t"
+        //                                                                  << rightPower << ",\t" 
+        //                                                                  << actual_fake_current << ",\t" 
+        //                                                                  << shmem->data->gear << ",\t" 
+        //                                                                  << cadence;
+
+        //             btle->newLeftData = false;
+        //         }
+
+        //         if(btle->newRightData)
+        //         { 
+        //             rightPower = btle->instantaneousRightPower;
+        //             shmem->data->right_power = rightPower;
+
+        //             if(shmem->data->pid)
+        //             {
+        //                 rightPowerPidOutput = FEScontrol.PID(SINGLE_POWER_TARGET, rightPower);
+        //                 shmem->data->right_pid_coeff = (double)rightPowerPidOutput;
+        //                 cout << "Right PID coefficient:" << rightPowerPidOutput << endl;
+        //             }
+        //             else
+        //             {
+        //                 shmem->data->left_pid_coeff = 0;
+        //                 shmem->data->right_pid_coeff = 0;
+        //             }
+                    
+        //             // current_toSum = rightPowerPidOutput * (100 - fake_current);
+        //             // if(current_toSum + fake_current <= 100)  actual_fake_current =  current_toSum + fake_current;
+        //             // else actual_fake_current = 100;
+                    
+        //             // fake_current = actual_fake_current;
+        //             //cout << "Fake current output: " << actual_fake_current << endl;
+
+        //             powerControlFile << endl << fixed << setprecision(2) << leftPowerPidOutput << ",\t" 
+        //                                                                  << rightPowerPidOutput << ",\t"
+        //                                                                  << leftPower << ",\t"
+        //                                                                  << rightPower << ",\t"  
+        //                                                                  << shmem->data->gear << ",\t" 
+        //                                                                  << cadence;
+        //             btle->newRightData = false;
+        //         }    
+        // }
+
         if(loop_count%100 == 0)
         {
-            if(shmem->data->pid)
-            {
                 if(shmem->data->new_left_data)
                 { 
-                    leftPower = btle->instantaneousLeftPower;
+                    leftPower = shmem->data->average_left_power;
                     shmem->data->left_power = leftPower;
-                    leftPowerPidOutput = FEScontrol.PID(SINGLE_POWER_TARGET, leftPower);
-                    shmem->data->left_pid_coeff = (double)leftPowerPidOutput;
-                    cout << "Left PID coefficient:" << leftPowerPidOutput << endl;
+                    if(shmem->data->pid)
+                    {
+                        leftPowerPidOutput = FEScontrol.PID(SINGLE_POWER_TARGET, leftPower);
+                        shmem->data->left_pid_coeff = (double)leftPowerPidOutput;
+                        cout << "Left PID coefficient:" << leftPowerPidOutput << endl;
+                    }
+                    else
+                    {
+                        shmem->data->left_pid_coeff = 0;
+                        shmem->data->right_pid_coeff = 0;
+                    }
                     
                     // current_toSum = leftPowerPidOutput * (100 - fake_current);
                     // if(current_toSum + fake_current <= 100)  actual_fake_current =  current_toSum + fake_current;
@@ -124,11 +201,20 @@ void powerControl()
 
                 if(shmem->data->new_right_data)
                 { 
-                    rightPower = btle->instantaneousRightPower;
+                    rightPower = shmem->data->average_right_power;
                     shmem->data->right_power = rightPower;
-                    rightPowerPidOutput = FEScontrol.PID(SINGLE_POWER_TARGET, rightPower);
-                    shmem->data->right_pid_coeff = (double)rightPowerPidOutput;
-                    cout << "Right PID coefficient:" << rightPowerPidOutput << endl;
+
+                    if(shmem->data->pid)
+                    {
+                        rightPowerPidOutput = FEScontrol.PID(SINGLE_POWER_TARGET, rightPower);
+                        shmem->data->right_pid_coeff = (double)rightPowerPidOutput;
+                        cout << "Right PID coefficient:" << rightPowerPidOutput << endl;
+                    }
+                    else
+                    {
+                        shmem->data->left_pid_coeff = 0;
+                        shmem->data->right_pid_coeff = 0;
+                    }
                     
                     // current_toSum = rightPowerPidOutput * (100 - fake_current);
                     // if(current_toSum + fake_current <= 100)  actual_fake_current =  current_toSum + fake_current;
@@ -144,13 +230,7 @@ void powerControl()
                                                                          << shmem->data->gear << ",\t" 
                                                                          << cadence;
                     shmem->data->new_right_data = false;
-                }
-            }
-            else
-            {
-               shmem->data->left_pid_coeff = 0;
-               shmem->data->right_pid_coeff = 0;
-            }    
+                }    
         }
 
         loop_count++;

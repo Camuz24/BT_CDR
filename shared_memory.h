@@ -106,6 +106,8 @@ class shared_memory
         int right_power = 0;
         bool new_right_data = false;
         bool new_left_data = false;
+        int average_left_power = 0;
+        int average_right_power = 0;
 
         double theorCurrentsR[4]={0};
         double theorCurrentsL[4]={0};

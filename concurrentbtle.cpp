@@ -607,7 +607,8 @@ void ConcurrentBtle::getLeftForce(const QLowEnergyCharacteristic &characteristic
     double angle = (double)(*angpo);
     //qDebug() << "Angle left: " << angle << "degrees";
 
-    double powerLeft = TF_left*(-cadence)*155/1000;
+    int cranck_length = 155;
+    double powerLeft = TF_left*(-cadence)*cranck_length/1000;
     //qDebug() << "Instantaneous Power Output Left:" << powerLeft <<"W";
     powerOutputLeft(powerLeft, angle);
     
@@ -640,6 +641,7 @@ void powerOutputLeft (double power,  double angle){
             int size = (int)leftPowerVector.size();
             averageLeftPower = sumLeftPowerVector / size;
             //qDebug() << "Average left power in one cycle: " << averageLeftPower << "W";
+            shmem->data->average_left_power = averageLeftPower;
             shmem->data->new_left_data = true;
             write_left_power(averageLeftPower);
             CSVfileLeftPowerForce << std::endl << averageLeftPower;
@@ -831,7 +833,8 @@ void ConcurrentBtle::getRightForce(const QLowEnergyCharacteristic &characteristi
     qint16 *angpo = (qint16 *) &data[12];
     double angle = (double)(*angpo);
 
-    double powerRight = TF_right*cadence*155/1000;
+    int cranck_length = 155;
+    double powerRight = TF_right*cadence*cranck_length/1000;
     //qDebug() << "Instantaneous Power Output Right:" << powerRight <<"W";
     powerOutputRight(powerRight, angle);
     
@@ -860,6 +863,7 @@ void powerOutputRight (double power, double angle){
             }
             int size = (int)rightPowerVector.size();
             averageRightPower = sumRightPowerVector / size;
+            shmem->data->average_right_power = averageRightPower;
             //qDebug() << "Average right power in one cycle: " << averageRightPower << "W";
             shmem->data->new_right_data = true;
             write_right_power(averageRightPower);
