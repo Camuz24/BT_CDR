@@ -63,6 +63,10 @@ void manager::writeOnSM(const QString &sender, const QString &message){
         shmem->data->pid=payload=="1";
     }else if(type == "gear"){
         shmem->data->gear = stoi(payload);
+    }else if(type == "pedals"){
+        std::cout << "Pedals selected: " << payload << std::endl;
+    }else if(type == "trike"){
+        std::cout << "Trike selected: " << payload << std::endl;
     }
     
     stopSend = false;
