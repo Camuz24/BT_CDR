@@ -14,10 +14,13 @@
 #include <ctime>   // for std::time()
 #include "pugixml-1.13/src/pugixml.hpp"
 #include <algorithm>
+#include "concurrentbtle.h"
 
 using namespace pugi;
 using std::string;
 using std::to_string;
+
+ConcurrentBtle* btle;
 
 manager::manager()
 {
@@ -93,6 +96,8 @@ std::cout << "Received message: " << std::endl;
         }else if(type == "pedals"){
             if(payload == "Pedals Lecco")    shmem->data->pedals = 0;
             else if(payload == "Pedals Colombo")    shmem->data->pedals = 1;
+            btle = new ConcurrentBtle();
+            std::cout << "Called constructor concurrentbtle" << std::endl;
         }else if(type == "trike"){
             if(payload == "CaTrike")    shmem->data->trike = 0;
             else if(payload == "IceTrike")    shmem->data->trike = 1;

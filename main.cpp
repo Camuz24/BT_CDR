@@ -7,7 +7,7 @@
 //using std::string;
 using namespace std;
 powerController FEScontrol;
-ConcurrentBtle* btle;
+//ConcurrentBtle* btle;
 
 float totalTargetPower = 2*SINGLE_POWER_TARGET;
 int dc = 0;
@@ -267,7 +267,7 @@ int main(int argc, char *argv[]){
         cout << "Error: Unable to open the file " << fileName << endl;
     }
 
-    btle = new ConcurrentBtle();
+    //btle = new ConcurrentBtle();
 
     //pthread_t thread;
     // pthread_create(&thread, NULL, threadFunction, nullptr);

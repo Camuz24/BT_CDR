@@ -75,11 +75,28 @@ ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
 {
     //std::system("hciconfig hci1 down");     //Disable the Internal Bluetooth Adapter
     //std::system("btattach -B hci0 -P public -S 115200 /dev/ttyUSB0");     //Set the USB Dongle as the Default Adapter
-    desiredDevices << QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")); /*SRM_XP_L_1818     Colombo*/
-//    desiredDevices << QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")); /*SRM_XP_L_2623   Lecco*/
-    desiredDevices << QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")); /*SRM_XP_R_1968     Colombo*/
-//    desiredDevices << QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")); /*SRM_XP_R_2971   Lecco*/
-//    desiredDevices << QBluetoothAddress(QStringLiteral("C8:75:75:F8:F1:CC")); /*Polar H10 8E5AB228*/ //C8:75:75:F8:F1:FA
+
+    SingletonSM* singletonSM = SingletonSM::getInstance();
+    shared_memory* shmem = singletonSM->get_SM();
+
+    bool pedals = shmem->data->pedals;
+
+    if(!pedals)    // Pedali Lecco
+    {
+        desiredDevices << QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")); /*SRM_XP_L_2623   Lecco*/
+        desiredDevices << QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")); /*SRM_XP_R_2971   Lecco*/
+    }
+    else if(pedals)      // Pedali Colombo
+    {
+        desiredDevices << QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")); /*SRM_XP_L_1818     Colombo*/
+        desiredDevices << QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")); /*SRM_XP_R_1968     Colombo*/
+    }  
+
+// //    desiredDevices << QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")); /*SRM_XP_L_1818     Colombo*/
+//     desiredDevices << QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")); /*SRM_XP_L_2623   Lecco*/
+// //    desiredDevices << QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")); /*SRM_XP_R_1968     Colombo*/
+//     desiredDevices << QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")); /*SRM_XP_R_2971   Lecco*/
+// //    desiredDevices << QBluetoothAddress(QStringLiteral("C8:75:75:F8:F1:CC")); /*Polar H10 8E5AB228*/ //C8:75:75:F8:F1:FA
 
     agent = new QBluetoothDeviceDiscoveryAgent(this);
     agent->setLowEnergyDiscoveryTimeout(10000);
@@ -173,11 +190,27 @@ void ConcurrentBtle::establishConnection()
     if (!device1) {
         std::cout << "establishing connection device 1" << std::endl;
 
-        for (int i=0;i<2;i++) {
-            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")))     //Colombo
-//            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")))       //Lecco
+        if(shmem->data->pedals == 0)
+        {
+            for (int i=0;i<2;i++) {
+                if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")))       //Lecco
                 device1 = new QLowEnergyController(desiredDevices.at(i));
+            }
         }
+        else if(shmem->data->pedals == 1)
+        {
+            for (int i=0;i<2;i++) {
+                if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")))     //Colombo
+                device1 = new QLowEnergyController(desiredDevices.at(i));
+            }
+        }
+
+//         for (int i=0;i<2;i++) {
+// //            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")))     //Colombo
+//             if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")))       //Lecco
+//                 device1 = new QLowEnergyController(desiredDevices.at(i));
+//         }
+
         device1->setParent(this);
         connect(device1, &QLowEnergyController::connected, this, [&](){
             ok_pleft = true;
@@ -215,11 +248,26 @@ void ConcurrentBtle::establishConnection()
     if (!device2 && desiredDevices.count() >= 2) {
         std::cout << "establishing connection device 2" << std::endl;
 
-        for (int i=0;i<2;i++) {
-            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")))     //Colombo
-//            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")))     //Lecco
-            device2 = new QLowEnergyController(desiredDevices.at(i));
+        if(shmem->data->pedals == 0)
+        {
+            for (int i=0;i<2;i++) {
+                if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")))       //Lecco
+                device1 = new QLowEnergyController(desiredDevices.at(i));
+            }
         }
+        else if(shmem->data->pedals == 1)
+        {
+            for (int i=0;i<2;i++) {
+                if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")))     //Colombo
+                device1 = new QLowEnergyController(desiredDevices.at(i));
+            }
+        }
+
+//         for (int i=0;i<2;i++) {
+// //            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")))     //Colombo
+//             if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")))     //Lecco
+//             device2 = new QLowEnergyController(desiredDevices.at(i));
+//         }
         device2->setParent(this);
 
         connect(device2, &QLowEnergyController::connected, this, [&](){
