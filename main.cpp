@@ -24,10 +24,11 @@ double mean_cadence = 0;
 double control_angle = -1;
 
 // data on power and stimulation
-float averageTotalPower = 0;
 float actual_fake_current = 0;
 float fake_current = 30;
 float current_toSum = 0;
+float averageTotalPower = 0;
+vector<int> powerVector(8, 0);
 
 ofstream powerControlFile;
 string fileName;    // create a name for the file output
@@ -137,12 +138,29 @@ void powerControl()
                 if(shmem->data->new_left_data && shmem->data->new_right_data)
                 { 
                     totalPower = shmem->data->average_left_power + shmem->data->average_right_power;
-                    shmem->data->total_power = totalPower;
                     cout << "Total power (left + right) over one cycle:" << totalPower << endl;
+                    shmem->data->total_power = totalPower;
+                    powerVector.erase(powerVector.begin()); // Rimuovi il primo elemento
+                    powerVector.push_back(totalPower); // Aggiungi un nuovo valore in coda
+                    // std::cout << "Vettore dopo l'aggiunta: ";
+                    // for (int i : powerVector) {
+                    //     std::cout << i << " ";
+                    // }
+                    // std::cout << std::endl;
+
+                    // Calcola la media dei valori nel vettore
+                    float sumTotalPower = 0.0;
+                    for (int i : powerVector) {
+                        sumTotalPower += i;
+                    }
+                    int size = (int)powerVector.size();
+                    averageTotalPower = sumTotalPower / size;
+
+                    std::cout << "Mean: " << averageTotalPower << std::endl;
 
                     if(shmem->data->pid)
                     {
-                        powerPidOutput = FEScontrol.PID(totalTargetPower, totalPower);
+                        powerPidOutput = FEScontrol.PID(totalTargetPower, (int)averageTotalPower);
                         shmem->data->pid_coeff = (double)powerPidOutput;
                         cout << "Pid coefficient:" << powerPidOutput << endl;
                     }
@@ -155,7 +173,7 @@ void powerControl()
                     // fake_current = actual_fake_current;
                     //cout << "Fake current output: " << actual_fake_current << endl;
 
-                    powerControlFile << endl << fixed << setprecision(2) << powerPidOutput << ",\t" << totalPower << ",\t" << actual_fake_current << ",\t" << shmem->data->gear << ",\t" << cadence;
+                    powerControlFile << endl << fixed << setprecision(2) << powerPidOutput << ",\t" << totalPower << ",\t" << averageTotalPower << ",\t" << actual_fake_current << ",\t" << shmem->data->gear << ",\t" << cadence;
 
                     shmem->data->new_left_data = false;
                     shmem->data->new_right_data = false;
@@ -233,13 +251,14 @@ int main(int argc, char *argv[]){
     char buffer [80];
 
     // Log directory
-    fileName = strftime (buffer,80,"/home/pi/Desktop/BT_CDR/FilePowerControlCamilla/AcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
+    fileName = strftime (buffer,80,"/home/pi/Desktop/SERVER_BT/FilePowerControlCamilla/AcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
     powerControlFile.open(buffer);
     // write the file headers
     if(powerControlFile.is_open())
     {
         powerControlFile << endl << "PID coefficient" << "," 
                                  << "Total Power" << "," 
+                                 << "5 cycles mean power" << "," 
                                  << "Stimul Current" << ","
                                  << "Gear" << ","
                                  << "Cadence" << endl;

@@ -91,9 +91,12 @@ std::cout << "Received message: " << std::endl;
         }else if(type == "gear"){
             shmem->data->gear = stoi(payload);
         }else if(type == "pedals"){
-            //std::cout << "Pedals selected: " << payload << std::endl;
+            if(payload == "Pedals Lecco")    shmem->data->pedals = 0;
+            else if(payload == "Pedals Colombo")    shmem->data->pedals = 1;
         }else if(type == "trike"){
-            //std::cout << "Trike selected: " << payload << std::endl;
+            if(payload == "CaTrike")    shmem->data->trike = 0;
+            else if(payload == "IceTrike")    shmem->data->trike = 1;
+            else if(payload == "BerkelBike")    shmem->data->trike = 2;
         }
         
         stopSend = false;
