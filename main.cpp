@@ -274,7 +274,7 @@ int main(int argc, char *argv[]){
     char buffer [80];
 
     // Log directory
-    fileName = strftime (buffer,80,"/home/pi/Desktop/BT_CDR/FilePowerControlCamilla/AcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
+    fileName = strftime (buffer,80,"/home/pi/Desktop/SERVER_BT/FilePowerControlCamilla/AcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
     powerControlFile.open(buffer);
     // write the file headers
     if(powerControlFile.is_open())
