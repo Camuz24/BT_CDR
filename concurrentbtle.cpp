@@ -655,7 +655,10 @@ void ConcurrentBtle::getLeftForce(const QLowEnergyCharacteristic &characteristic
     double angle = (double)(*angpo);
     //qDebug() << "Angle left: " << angle << "degrees";
 
-    int crank_length = 155;
+    int crank_length;
+    if(shmem->data->trike == 0)     int crank_length = 165;
+    else if (shmem->data->trike == 1)     int crank_length = 155;
+    else if (shmem->data->trike == 2)     int crank_length = 125;
     double powerLeft = TF_left*(-cadence)*crank_length/1000;
     //qDebug() << "Instantaneous Power Output Left:" << powerLeft <<"W";
     powerOutputLeft(powerLeft, angle);
@@ -882,7 +885,10 @@ void ConcurrentBtle::getRightForce(const QLowEnergyCharacteristic &characteristi
     qint16 *angpo = (qint16 *) &data[12];
     double angle = (double)(*angpo);
 
-    int crank_length = 155;
+    int crank_length;
+    if(shmem->data->trike == 0)     int crank_length = 165;
+    else if (shmem->data->trike == 1)     int crank_length = 155;
+    else if (shmem->data->trike == 2)     int crank_length = 125;
     double powerRight = TF_right*cadence*crank_length/1000;
     //qDebug() << "Instantaneous Power Output Right:" << powerRight <<"W";
     powerOutputRight(powerRight, angle);

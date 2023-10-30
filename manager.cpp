@@ -96,12 +96,12 @@ std::cout << "Received message: " << std::endl;
         }else if(type == "pedals"){
             if(payload == "Pedals Lecco")    shmem->data->pedals = 0;
             else if(payload == "Pedals Colombo")    shmem->data->pedals = 1;
-            btle = new ConcurrentBtle();
-            std::cout << "Called constructor concurrentbtle" << std::endl;
         }else if(type == "trike"){
             if(payload == "CaTrike")    shmem->data->trike = 0;
             else if(payload == "IceTrike")    shmem->data->trike = 1;
             else if(payload == "BerkelBike")    shmem->data->trike = 2;
+            btle = new ConcurrentBtle();
+            std::cout << "Called constructor concurrentbtle" << std::endl;
         }
         
         stopSend = false;
