@@ -70,6 +70,11 @@ void write_right_power(qint16 inst_right_power){
     shmem->data->power_right = inst_right_power;
 }
 
+ConcurrentBtle::~ConcurrentBtle()
+{
+
+}
+
 // code to initialize btle function
 ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
 {

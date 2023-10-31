@@ -30,6 +30,7 @@ class ConcurrentBtle : public QObject
 
 public:
     explicit ConcurrentBtle(QObject *parent = nullptr);
+    ~ConcurrentBtle();
     int num_left_data;
     int num_right_data;
     qint16 instantaneousLeftPower;

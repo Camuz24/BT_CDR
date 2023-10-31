@@ -7,7 +7,6 @@
 //using std::string;
 using namespace std;
 powerController FEScontrol;
-//ConcurrentBtle* btle;
 
 float totalTargetPower = 2*SINGLE_POWER_TARGET;
 int dc = 0;
