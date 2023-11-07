@@ -113,7 +113,6 @@ std::cout << "Received message: " << std::endl;
 
     if(first_time)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
         btle = new ConcurrentBtle(pedals, trike);
         std::cout << "Called constructor concurrentbtle" << std::endl;
     }

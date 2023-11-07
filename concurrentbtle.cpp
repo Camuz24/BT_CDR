@@ -95,6 +95,7 @@ ConcurrentBtle::ConcurrentBtle(int pedals, int trike, QObject *parent) : QObject
     else if (trike == 1)     crank_length = 155;    //IceTrike
     else if (trike == 2)     crank_length = 125;    //BerkelBike
 
+
     if(!pedals)
     {
         addressLeft = "F6:D0:29:C5:60:4C";      /*SRM_XP_L_2623   Lecco*/
