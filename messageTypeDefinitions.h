@@ -1,5 +1,5 @@
 #define START_STOP           "a" // 
-#define PID                   "b" // 
+#define PID                   "b" //
 #define CURRENT_CADENCE       "c" // 
 #define ANGLE_ENCODER         "d" // 
 #define CHECK_STIM1           "e" // 

@@ -7,6 +7,7 @@
 //using std::string;
 using namespace std;
 powerController FEScontrol;
+//ConcurrentBtle* btle;
 
 float totalTargetPower = 2*SINGLE_POWER_TARGET;
 int dc = 0;
@@ -210,6 +211,11 @@ void powerControl()
         //         }
         // }
 
+        if(loop_count%100 == 0)
+        {
+
+        }
+        
         loop_count++;
 
         clock_nanosleep ( CLOCK_MONOTONIC, TIMER_ABSTIME, &t_next, nullptr ); // waits until time t_next is reached
@@ -218,6 +224,9 @@ void powerControl()
 }
 
 int main(int argc, char *argv[]){
+
+    signal(SIGINT, myInterruptHandler);
+
     std::cout << "Starting server...!\n";
 
     QCoreApplication a(argc, argv);
@@ -274,8 +283,6 @@ int main(int argc, char *argv[]){
 
     thread Thread(powerControl);
     FEScontrol.PidON();
-    
-    signal(SIGINT, myInterruptHandler);
 
     return a.exec();
 }

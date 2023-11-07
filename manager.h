@@ -21,6 +21,9 @@ public:
     void threadReadFromSM();
     void startThread();
     bool stopThread;
+    int pedals;
+    int trike;
+    bool first_time;
     
 
 public slots:

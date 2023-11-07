@@ -19,20 +19,16 @@
 using namespace pugi;
 using std::string;
 using std::to_string;
-
 ConcurrentBtle* btle;
+// bool trike_ok = false;
+// bool pedals_ok = false;
 
 manager::manager()
 {
     stopThread = false;
     stopSend = false;
+    first_time = false;
     std::srand(static_cast<unsigned>(std::time(0)));
-
-    SingletonSM* singletonSM = SingletonSM::getInstance();
-    shared_memory* shmem = singletonSM->get_SM();
-
-    shmem->data->first_time = true;
-
 }
 
 manager::~manager()
@@ -100,25 +96,26 @@ std::cout << "Received message: " << std::endl;
         }else if(type == "gear"){
             shmem->data->gear = stoi(payload);
         }else if(type == "pedals"){
-            if(payload == "Pedals Lecco")    shmem->data->pedals = 0;
-            else if(payload == "Pedals Colombo")    shmem->data->pedals = 1;
-            shmem->data->pedals_ok = true;
+            if(payload == "Pedals Lecco")    pedals = 0;
+            else if(payload == "Pedals Colombo")    pedals = 1;
+            //pedals_ok = true;
         }else if(type == "trike"){
-            if(payload == "CaTrike")    shmem->data->trike = 0;
-            else if(payload == "IceTrike")    shmem->data->trike = 1;
-            else if(payload == "BerkelBike")    shmem->data->trike = 2;
-            shmem->data->trike_ok = true;
-            
-            if(shmem->data->trike_ok && shmem->data->pedals_ok && shmem->data->first_time)
-            {
-                shmem->data->first_time = false;
-                btle = new ConcurrentBtle();
-                std::cout << "Called constructor concurrentbtle" << std::endl;
-            }
+            if(payload == "CaTrike")    trike = 0;
+            else if(payload == "IceTrike")    trike = 1;
+            else if(payload == "BerkelBike")    trike = 2;
+            //trike_ok = true;
+            first_time = true;
         }
         
         stopSend = false;
         std::cout << "start send" << std::endl;
+    }
+
+    if(first_time)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        btle = new ConcurrentBtle(pedals, trike);
+        std::cout << "Called constructor concurrentbtle" << std::endl;
     }
 }
 

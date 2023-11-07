@@ -115,11 +115,6 @@ class shared_memory
         float current_cadence = 0.0;
         bool up               = 0;
         bool down             = 0;
-        int trike = -1;
-        int pedals = -1;
-        bool first_time = true;
-        bool trike_ok = false;
-        bool pedals_ok = false;
 
         // Input variables from GUI
 

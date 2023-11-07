@@ -15,6 +15,9 @@
 SingletonSM* singletonSM = SingletonSM::getInstance();
 shared_memory* shmem = singletonSM->get_SM();
 
+//manager Manager;
+int crank_length;
+
 ofstream CSVfileLeft; //dato grezzo pedale sinistro ed efficiency
 ofstream CSVfileRight; //dato grezzo pedale destro ed efficiency
 //ofstream CSVfileCardio; //dato grezzo cardio
@@ -76,31 +79,40 @@ ConcurrentBtle::~ConcurrentBtle()
 }
 
 // code to initialize btle function
-ConcurrentBtle::ConcurrentBtle(QObject *parent) : QObject(parent)
+ConcurrentBtle::ConcurrentBtle(int pedals, int trike, QObject *parent) : QObject(parent)
 {
     //std::system("hciconfig hci1 down");     //Disable the Internal Bluetooth Adapter
     //std::system("btattach -B hci0 -P public -S 115200 /dev/ttyUSB0");     //Set the USB Dongle as the Default Adapter
 
-    SingletonSM* singletonSM = SingletonSM::getInstance();
-    shared_memory* shmem = singletonSM->get_SM();
+    this->pedals = pedals;
+    this->trike = trike;
+    Manager.first_time = false;
 
-    bool pedals = shmem->data->pedals;
+    qDebug() << "Assigned values: " << pedals << trike  << Manager.first_time;
 
-    if(!pedals)    // Pedali Lecco
+    //int crank_length = 155;
+    if(trike == 0)     crank_length = 165;          //CaTrike
+    else if (trike == 1)     crank_length = 155;    //IceTrike
+    else if (trike == 2)     crank_length = 125;    //BerkelBike
+
+    if(!pedals)
     {
-        desiredDevices << QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")); /*SRM_XP_L_2623   Lecco*/
-        desiredDevices << QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")); /*SRM_XP_R_2971   Lecco*/
+        addressLeft = "F6:D0:29:C5:60:4C";      /*SRM_XP_L_2623   Lecco*/
+        addressRight = "D5:5E:63:D1:CE:BF";     /*SRM_XP_R_2971   Lecco*/
     }
     else if(pedals)      // Pedali Colombo
     {
-        desiredDevices << QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")); /*SRM_XP_L_1818     Colombo*/
-        desiredDevices << QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")); /*SRM_XP_R_1968     Colombo*/
+       addressLeft = "C6:21:8B:A7:24:5F"; /*SRM_XP_L_1818     Colombo*/
+       addressRight = "ED:86:C3:29:8A:05"; /*SRM_XP_R_1968     Colombo*/
     }  
 
-// //    desiredDevices << QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")); /*SRM_XP_L_1818     Colombo*/
-//     desiredDevices << QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")); /*SRM_XP_L_2623   Lecco*/
-// //    desiredDevices << QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")); /*SRM_XP_R_1968     Colombo*/
-//     desiredDevices << QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")); /*SRM_XP_R_2971   Lecco*/
+    desiredDevices << QBluetoothAddress(addressLeft);
+    desiredDevices << QBluetoothAddress(addressRight);
+
+//     desiredDevices << QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")); /*SRM_XP_L_1818     Colombo*/
+// //    desiredDevices << QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")); /*SRM_XP_L_2623   Lecco*/
+//     desiredDevices << QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")); /*SRM_XP_R_1968     Colombo*/
+// //    desiredDevices << QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")); /*SRM_XP_R_2971   Lecco*/
 // //    desiredDevices << QBluetoothAddress(QStringLiteral("C8:75:75:F8:F1:CC")); /*Polar H10 8E5AB228*/ //C8:75:75:F8:F1:FA
 
     agent = new QBluetoothDeviceDiscoveryAgent(this);
@@ -191,28 +203,18 @@ void ConcurrentBtle::startSearch()
 
 void ConcurrentBtle::establishConnection()
 {
-
+    pedals = (bool)Manager.pedals;
     if (!device1) {
         std::cout << "establishing connection device 1" << std::endl;
 
-        if(shmem->data->pedals == 0)
-        {
-            for (int i=0;i<2;i++) {
-                if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")))       //Lecco
-                device1 = new QLowEnergyController(desiredDevices.at(i));
-            }
-        }
-        else if(shmem->data->pedals == 1)
-        {
-            for (int i=0;i<2;i++) {
-                if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")))     //Colombo
-                device1 = new QLowEnergyController(desiredDevices.at(i));
-            }
+        for (int i=0;i<2;i++) {
+            if (desiredDevices.at(i)==QBluetoothAddress(addressLeft))
+            device1 = new QLowEnergyController(desiredDevices.at(i));
         }
 
 //         for (int i=0;i<2;i++) {
-// //            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")))     //Colombo
-//             if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")))       //Lecco
+//             if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")))     //Colombo
+// //            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")))       //Lecco
 //                 device1 = new QLowEnergyController(desiredDevices.at(i));
 //         }
 
@@ -253,24 +255,14 @@ void ConcurrentBtle::establishConnection()
     if (!device2 && desiredDevices.count() >= 2) {
         std::cout << "establishing connection device 2" << std::endl;
 
-        if(shmem->data->pedals == 0)
-        {
-            for (int i=0;i<2;i++) {
-                if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")))       //Lecco
-                device1 = new QLowEnergyController(desiredDevices.at(i));
-            }
-        }
-        else if(shmem->data->pedals == 1)
-        {
-            for (int i=0;i<2;i++) {
-                if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")))     //Colombo
-                device1 = new QLowEnergyController(desiredDevices.at(i));
-            }
+        for (int i=0;i<2;i++) {
+            if (desiredDevices.at(i)==QBluetoothAddress(addressRight))
+            device2 = new QLowEnergyController(desiredDevices.at(i));
         }
 
 //         for (int i=0;i<2;i++) {
-// //            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")))     //Colombo
-//             if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")))     //Lecco
+//             if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")))     //Colombo
+// //            if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")))     //Lecco
 //             device2 = new QLowEnergyController(desiredDevices.at(i));
 //         }
         device2->setParent(this);
@@ -660,10 +652,7 @@ void ConcurrentBtle::getLeftForce(const QLowEnergyCharacteristic &characteristic
     double angle = (double)(*angpo);
     //qDebug() << "Angle left: " << angle << "degrees";
 
-    int crank_length;
-    if(shmem->data->trike == 0)     int crank_length = 165;
-    else if (shmem->data->trike == 1)     int crank_length = 155;
-    else if (shmem->data->trike == 2)     int crank_length = 125;
+    qDebug() << "Crank length: " << crank_length;
     double powerLeft = TF_left*(-cadence)*crank_length/1000;
     //qDebug() << "Instantaneous Power Output Left:" << powerLeft <<"W";
     powerOutputLeft(powerLeft, angle);
@@ -890,10 +879,7 @@ void ConcurrentBtle::getRightForce(const QLowEnergyCharacteristic &characteristi
     qint16 *angpo = (qint16 *) &data[12];
     double angle = (double)(*angpo);
 
-    int crank_length;
-    if(shmem->data->trike == 0)     int crank_length = 165;
-    else if (shmem->data->trike == 1)     int crank_length = 155;
-    else if (shmem->data->trike == 2)     int crank_length = 125;
+    qDebug() << "Crank length: " << crank_length;
     double powerRight = TF_right*cadence*crank_length/1000;
     //qDebug() << "Instantaneous Power Output Right:" << powerRight <<"W";
     powerOutputRight(powerRight, angle);

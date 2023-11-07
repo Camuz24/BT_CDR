@@ -9,6 +9,7 @@
 #include <QCoreApplication>
 #include "shared_memory.h"
 #include "singletonSM.h"
+#include "manager.h"
 
 using namespace std;
 
@@ -29,7 +30,7 @@ class ConcurrentBtle : public QObject
     Q_OBJECT
 
 public:
-    explicit ConcurrentBtle(QObject *parent = nullptr);
+    explicit ConcurrentBtle(int pedals, int trike, QObject *parent = nullptr);
     ~ConcurrentBtle();
     int num_left_data;
     int num_right_data;
@@ -41,6 +42,7 @@ public:
     vector<double> leftForceVector;
     vector<double> rightForceVector;
 
+    manager Manager;
 
 signals:
 
@@ -75,6 +77,13 @@ private:
 
     qint16 averageLeftPower;
     qint16 averageRightPower;
+
+    QString addressLeft;
+    QString addressRight;
+
+    int pedals;
+    int trike;
+    bool first_time;
 };
 
 #endif // CONCURRENTBTLE_H
