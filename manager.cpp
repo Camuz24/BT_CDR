@@ -99,12 +99,12 @@ std::cout << "Received message: " << std::endl;
             if(payload == "Pedals Lecco")    pedals = 0;
             else if(payload == "Pedals Colombo")    pedals = 1;
             //pedals_ok = true;
+            first_time = true;
         }else if(type == "trike"){
             if(payload == "CaTrike")    trike = 0;
             else if(payload == "IceTrike")    trike = 1;
             else if(payload == "BerkelBike")    trike = 2;
             //trike_ok = true;
-            first_time = true;
         }
         
         stopSend = false;
