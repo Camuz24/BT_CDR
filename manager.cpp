@@ -27,7 +27,7 @@ manager::manager()
 {
     stopThread = false;
     stopSend = false;
-    first_time = false;
+    first_time = true;
     std::srand(static_cast<unsigned>(std::time(0)));
 }
 
@@ -113,6 +113,8 @@ std::cout << "Received message: " << std::endl;
 
     if(first_time)
     {
+        pedals = 1;     // forza ricerca a pedali Colombo
+        trike = 1;      // forza impostazione IceTrike
         btle = new ConcurrentBtle(pedals, trike);
         std::cout << "Called constructor concurrentbtle" << std::endl;
     }

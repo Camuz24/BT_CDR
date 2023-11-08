@@ -17,13 +17,18 @@ void OpenFileLeft();
 void writeFileLeft(qint16 parameter1);
 void OpenFileRight();
 void writeFileRight(qint16 parameter1);
-// void OpenFileCardio();
-// void writeFileCardio(double parameter1);
+void OpenFileCardio();
+void writeFileCardio(double parameter1);
+void OpenFileCardioRR();
+void writeFileCardioRR(double parameter1);
 void OpenFileLeftPowerForce();
 void OpenFileRightPowerForce();
+void OpenFileLeftForceAngle();
+void writeFileLeftForceAngle(double parameter1, double parameter2);
+void OpenFileRightForceAngle();
+void writeFileRightForceAngle(double parameter1, double parameter2);
 void powerOutputRight (double power,  double angle);
 void powerOutputLeft (double power,  double angle);
-
 
 class ConcurrentBtle : public QObject
 {
@@ -49,7 +54,7 @@ signals:
 public slots:
     void startSearch();
     void establishConnection();
-//    void setupNotificationCardio(QLowEnergyController *device, const QString &name);
+    void setupNotificationCardio(QLowEnergyController *device, const QString &name);
     void setupNotificationRight(QLowEnergyController *device, const QString &name);
     void setupNotificationLeft(QLowEnergyController *device, const QString &name);
     void reconnectDevice();
@@ -64,11 +69,11 @@ private:
     QList<QBluetoothDeviceInfo> foundDevices;
     QTimer *reconnectTimer1; // Timer for reconnection attempts
     QTimer *reconnectTimer2; // Timer for reconnection attempts
-//    QTimer *reconnectTimer3; // Timer for reconnection attempts
+    QTimer *reconnectTimer3; // Timer for reconnection attempts
 
     QLowEnergyController *device1 = nullptr;
     QLowEnergyController *device2 = nullptr;
-//    QLowEnergyController *device3 = nullptr;
+    QLowEnergyController *device3 = nullptr;
 
     int leftSumPowerVector;
     int rightSumPowerVector;
@@ -80,6 +85,7 @@ private:
 
     QString addressLeft;
     QString addressRight;
+    QString addressPolar;
 
     int pedals;
     int trike;

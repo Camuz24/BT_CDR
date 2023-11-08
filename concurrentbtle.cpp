@@ -20,16 +20,22 @@ int crank_length;
 
 ofstream CSVfileLeft; //dato grezzo pedale sinistro ed efficiency
 ofstream CSVfileRight; //dato grezzo pedale destro ed efficiency
-//ofstream CSVfileCardio; //dato grezzo cardio
+ofstream CSVfileCardio; //dato grezzo cardio
+ofstream CSVfileCardioRR; //dato grezzo cardio RR
 ofstream CSVfileLeftPowerForce;
 ofstream CSVfileRightPowerForce;
+ofstream CSVfileLeftForceAngle;
+ofstream CSVfileRightForceAngle;
 
 // create a name for the file output
 std::string filenameLeft = "FileLeft.csv";
 std::string filenameRight = "FileRight.csv";
-//std::string filenameCardio = "FileCardio.csv";
+std::string filenameCardio = "FileCardio.csv";
+std::string filenameCardioRR = "FileCardioRR.csv";
 std::string filenameLeftPowerForce = "FileLeftPowerForce.csv";
 std::string filenameRightPowerForce = "FileRightPowerForce.csv";
+std::string filenameLeftForceAngle = "FileLeftForceAngle.csv";
+std::string filenameRightForceAngle = "FileRightForceAngle.csv";
 
 std::vector<double> leftPowerVector;
 std::vector<double> rightPowerVector;
@@ -42,12 +48,12 @@ double Angle_old_right = 0.0;
 
 bool ok_pleft = 0;
 bool ok_pright = 0;
-// bool ok_cardio = 0;
-// int hr_sconnesso = 0;
+bool ok_cardio = 0;
+int hr_sconnesso = 0;
 
 bool disconnected1 = true;
 bool disconnected2 = true;
-//bool disconnected3 = true;
+bool disconnected3 = true;
 
 void write_heart_rate(double hr_value){
     // std::cout << "writing HR" << std::endl;
@@ -107,14 +113,16 @@ ConcurrentBtle::ConcurrentBtle(int pedals, int trike, QObject *parent) : QObject
        addressRight = "ED:86:C3:29:8A:05"; /*SRM_XP_R_1968     Colombo*/
     }  
 
+    addressPolar = "C8:75:75:F8:F1:FA";      //C8:75:75:F8:F1:CC
+
     desiredDevices << QBluetoothAddress(addressLeft);
     desiredDevices << QBluetoothAddress(addressRight);
+    desiredDevices << QBluetoothAddress(addressPolar); /*Polar H10 8E5AB228*/
 
 //     desiredDevices << QBluetoothAddress(QStringLiteral("C6:21:8B:A7:24:5F")); /*SRM_XP_L_1818     Colombo*/
 // //    desiredDevices << QBluetoothAddress(QStringLiteral("F6:D0:29:C5:60:4C")); /*SRM_XP_L_2623   Lecco*/
 //     desiredDevices << QBluetoothAddress(QStringLiteral("ED:86:C3:29:8A:05")); /*SRM_XP_R_1968     Colombo*/
 // //    desiredDevices << QBluetoothAddress(QStringLiteral("D5:5E:63:D1:CE:BF")); /*SRM_XP_R_2971   Lecco*/
-// //    desiredDevices << QBluetoothAddress(QStringLiteral("C8:75:75:F8:F1:CC")); /*Polar H10 8E5AB228*/ //C8:75:75:F8:F1:FA
 
     agent = new QBluetoothDeviceDiscoveryAgent(this);
     agent->setLowEnergyDiscoveryTimeout(10000);
@@ -177,17 +185,20 @@ ConcurrentBtle::ConcurrentBtle(int pedals, int trike, QObject *parent) : QObject
     reconnectTimer2->setInterval(5000); // Adjust the interval as needed (e.g., 5 seconds)
     connect(reconnectTimer2, &QTimer::timeout, this, &ConcurrentBtle::reconnectDevice);
 
-    // reconnectTimer3 = new QTimer(this);
-    // reconnectTimer3->setInterval(5000); // Adjust the interval as needed (e.g., 5 seconds)
-    // connect(reconnectTimer3, &QTimer::timeout, this, &ConcurrentBtle::reconnectDevice);
+    reconnectTimer3 = new QTimer(this);
+    reconnectTimer3->setInterval(5000); // Adjust the interval as needed (e.g., 5 seconds)
+    connect(reconnectTimer3, &QTimer::timeout, this, &ConcurrentBtle::reconnectDevice);
 
     startSearch();
 
     // OpenFileLeft();
     // OpenFileRight();
-    // OpenFileCardio();
+    OpenFileCardio();
+    OpenFileCardioRR();
     // OpenFileLeftPowerForce();
     // OpenFileRightPowerForce();
+    OpenFileLeftForceAngle();
+    OpenFileRightForceAngle();
 }
 
 void ConcurrentBtle::startSearch()
@@ -204,11 +215,10 @@ void ConcurrentBtle::startSearch()
 
 void ConcurrentBtle::establishConnection()
 {
-    pedals = (bool)Manager.pedals;
     if (!device1) {
         std::cout << "establishing connection device 1" << std::endl;
 
-        for (int i=0;i<2;i++) {
+        for (int i=0;i<3;i++) {
             if (desiredDevices.at(i)==QBluetoothAddress(addressLeft))
             device1 = new QLowEnergyController(desiredDevices.at(i));
         }
@@ -256,7 +266,7 @@ void ConcurrentBtle::establishConnection()
     if (!device2 && desiredDevices.count() >= 2) {
         std::cout << "establishing connection device 2" << std::endl;
 
-        for (int i=0;i<2;i++) {
+        for (int i=0;i<3;i++) {
             if (desiredDevices.at(i)==QBluetoothAddress(addressRight))
             device2 = new QLowEnergyController(desiredDevices.at(i));
         }
@@ -301,48 +311,48 @@ void ConcurrentBtle::establishConnection()
         device2->connectToDevice();
     }
 
-    // if (!device3 && desiredDevices.count() >= 3) {
-    //     std::cout << "establishing connection device 3" << std::endl;
+    if (!device3 && desiredDevices.count() >= 3) {
+        std::cout << "establishing connection device 3" << std::endl;
 
-    //     for (int i=0;i<3;i++) {
-    //         if (desiredDevices.at(i)==QBluetoothAddress(QStringLiteral("C8:75:75:F8:F1:CC")))   //C8:75:75:F8:F1:FA
-    //         device3 = new QLowEnergyController(desiredDevices.at(i));
-    //     }
+        for (int i=0;i<3;i++) {
+            if (desiredDevices.at(i)==QBluetoothAddress(addressPolar))
+            device3 = new QLowEnergyController(desiredDevices.at(i));
+        }
         
-    //     device3->setParent(this);
-    //     connect(device3, &QLowEnergyController::connected, this, [&](){
-    //         ok_cardio = 1;
-    //         disconnected3 = false;
+        device3->setParent(this);
+        connect(device3, &QLowEnergyController::connected, this, [&](){
+            ok_cardio = 1;
+            disconnected3 = false;
 
-    //         SingletonSM* singletonSM = SingletonSM::getInstance();
-    //         shared_memory* shmem = singletonSM->get_SM();
-    //         shmem->data->check_cardio = ok_cardio;
+            SingletonSM* singletonSM = SingletonSM::getInstance();
+            shared_memory* shmem = singletonSM->get_SM();
+            shmem->data->check_cardio = ok_cardio;
 
-    //         qDebug() << "*********** Device 3 Polar H10 connected" << device3->remoteAddress();
-    //         device3->discoverServices();
-    //         reconnectTimer3->stop();
-    //     });
+            qDebug() << "*********** Device 3 Polar H10 connected" << device3->remoteAddress();
+            device3->discoverServices();
+            reconnectTimer3->stop();
+        });
 
-    //     connect(device3, &QLowEnergyController::disconnected, this, [&](){
-    //         ok_cardio = 0;
-    //         disconnected3 = true;
+        connect(device3, &QLowEnergyController::disconnected, this, [&](){
+            ok_cardio = 0;
+            disconnected3 = true;
 
-    //         SingletonSM* singletonSM = SingletonSM::getInstance();
-    //         shared_memory* shmem = singletonSM->get_SM();
-    //         shmem->data->check_cardio = ok_cardio;
+            SingletonSM* singletonSM = SingletonSM::getInstance();
+            shared_memory* shmem = singletonSM->get_SM();
+            shmem->data->check_cardio = ok_cardio;
 
-    //         qDebug() << "Device 3 Disconnected";
+            qDebug() << "Device 3 Disconnected";
 
-    //         reconnectTimer3->start();
-    //     });
+            reconnectTimer3->start();
+        });
 
-    //     connect(device3, &QLowEnergyController::discoveryFinished, this, [&](){
-    //        qDebug() <<  "*********** Device 3 discovery finished";
-    //        setupNotificationCardio(device3, QStringLiteral("Device 3"));
-    //     });
+        connect(device3, &QLowEnergyController::discoveryFinished, this, [&](){
+           qDebug() <<  "*********** Device 3 discovery finished";
+           setupNotificationCardio(device3, QStringLiteral("Device 3"));
+        });
 
-    //     device3->connectToDevice();
-    // }
+        device3->connectToDevice();
+    }
 }
 
 void ConcurrentBtle::reconnectDevice()
@@ -429,47 +439,47 @@ void ConcurrentBtle::reconnectDevice()
         }
     }
 
-    // if(disconnected3)
-    // {
-    //     qDebug() << "Attempting to reconnect Device 3...";
-    //     if (device3)
-    //     {
-    //         device3->disconnectFromDevice(); // Ensure the device is disconnected first
-    //         device3->connectToDevice();
-    //     }
-    //     else
-    //     {
-    //         // If device3 is not initialized, create a new instance and connect
-    //         device3 = new QLowEnergyController(desiredDevices.at(2));
-    //         connect(device3, &QLowEnergyController::connected, this, [&](){
-    //             ok_cardio = true;
-    //             disconnected3 = false;
+    if(disconnected3)
+    {
+        qDebug() << "Attempting to reconnect Device 3...";
+        if (device3)
+        {
+            device3->disconnectFromDevice(); // Ensure the device is disconnected first
+            device3->connectToDevice();
+        }
+        else
+        {
+            // If device3 is not initialized, create a new instance and connect
+            device3 = new QLowEnergyController(desiredDevices.at(2));
+            connect(device3, &QLowEnergyController::connected, this, [&](){
+                ok_cardio = true;
+                disconnected3 = false;
 
-    //             SingletonSM* singletonSM = SingletonSM::getInstance();
-    //             shared_memory* shmem = singletonSM->get_SM();
-    //             shmem->data->check_cardio = ok_cardio;
+                SingletonSM* singletonSM = SingletonSM::getInstance();
+                shared_memory* shmem = singletonSM->get_SM();
+                shmem->data->check_cardio = ok_cardio;
 
-    //             qDebug() << "*********** Device 3 Polar connected" << device3->remoteAddress();
-    //             device3->discoverServices();
-    //             reconnectTimer3->stop();
+                qDebug() << "*********** Device 3 Polar connected" << device3->remoteAddress();
+                device3->discoverServices();
+                reconnectTimer3->stop();
 
-    //         });
+            });
 
-    //         connect(device3, &QLowEnergyController::disconnected, this, [&](){
-    //             qDebug() << "Device 3 disconnected";
-    //             ok_cardio = false;
-    //             disconnected3 = true;
+            connect(device3, &QLowEnergyController::disconnected, this, [&](){
+                qDebug() << "Device 3 disconnected";
+                ok_cardio = false;
+                disconnected3 = true;
 
-    //             SingletonSM* singletonSM = SingletonSM::getInstance();
-    //             shared_memory* shmem = singletonSM->get_SM();
-    //             shmem->data->check_cardio = ok_cardio;
+                SingletonSM* singletonSM = SingletonSM::getInstance();
+                shared_memory* shmem = singletonSM->get_SM();
+                shmem->data->check_cardio = ok_cardio;
 
-    //             reconnectTimer3->start();
-    //         });
+                reconnectTimer3->start();
+            });
 
-    //         device3->connectToDevice();
-    //     }
-    // }
+            device3->connectToDevice();
+        }
+    }
 }
 
 void OpenFileLeft()
@@ -480,12 +490,12 @@ void OpenFileLeft()
     char buffer [80];
 
     // Log directory
-    filenameLeft = strftime (buffer,80,"/home/pi/Desktop/BT_CDR/DatiPedali_forcePower/LeftAcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
+    filenameLeft = strftime (buffer,80,"/home/pi/Desktop/SERVER_BT/DatiPedali&Cardio/LeftAcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
     CSVfileLeft.open(buffer);
     // write the file headers
     if(CSVfileLeft.is_open())
     {
-        CSVfileLeft << std::endl << "Mean power" << std::endl;
+        CSVfileLeft << std::endl << "Left power" << std::endl;
     }
     else if (!CSVfileLeft.is_open()) {
         std::cout << "Error: Unable to open the file " << filenameLeft << std::endl;
@@ -507,7 +517,7 @@ void OpenFileLeftPowerForce()
     char buffer [80];
 
     // Log directory
-    filenameLeftPowerForce = strftime (buffer,80,"/home/pi/Desktop/BT_CDR/DatiPedali_forcePower/LeftPowerForceAcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
+    filenameLeftPowerForce = strftime (buffer,80,"/home/pi/Desktop/SERVER_BT/DatiPedali&Cardio/LeftPowerForceAcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
     CSVfileLeftPowerForce.open(buffer);
     // write the file headers
     if(CSVfileLeftPowerForce.is_open())
@@ -516,6 +526,33 @@ void OpenFileLeftPowerForce()
     }
     else if (!CSVfileLeftPowerForce.is_open()) {
         std::cout << "Error: Unable to open the file " << filenameLeftPowerForce << std::endl;
+        return;
+    }
+}
+
+void writeFileLeftForceAngle(double parameter1, double parameter2){
+    // clock_gettime ( CLOCK_MONOTONIC, &timeLoop);
+    CSVfileLeftForceAngle << std::endl << parameter1 << ",\t" << parameter2;
+
+}
+
+void OpenFileLeftForceAngle()
+{
+    // Get system  time
+    time_t t = time(nullptr);
+    struct tm * now = localtime( & t );
+    char buffer [80];
+
+    // Log directory
+    filenameLeftForceAngle = strftime (buffer,80,"/home/pi/Desktop/SERVER_BT/DatiPedali&Cardio/LeftForceAngleAcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
+    CSVfileLeftForceAngle.open(buffer);
+    // write the file headers
+    if(CSVfileLeftForceAngle.is_open())
+    {
+        CSVfileLeftForceAngle << std::endl << "Left Force" << "," <<" Left Angle" << std::endl;
+    }
+    else if (!CSVfileLeftForceAngle.is_open()) {
+        std::cout << "Error: Unable to open the file " << filenameLeftForceAngle << std::endl;
         return;
     }
 }
@@ -655,6 +692,8 @@ void ConcurrentBtle::getLeftForce(const QLowEnergyCharacteristic &characteristic
 
     double powerLeft = TF_left*(-cadence)*crank_length/1000;
     //qDebug() << "Instantaneous Power Output Left:" << powerLeft <<"W";
+
+    writeFileLeftForceAngle(TF_left, angle);
     powerOutputLeft(powerLeft, angle);
     
 }
@@ -707,7 +746,7 @@ void OpenFileRight()
     char buffer [80];
 
     // Log directory
-    filenameRight = strftime (buffer,80,"/home/pi/Desktop/BT_CDR/DatiPedali_forcePower/RightAcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
+    filenameRight = strftime (buffer,80,"/home/pi/Desktop/SERVER_BT/DatiPedali&Cardio/RightAcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
     CSVfileRight.open(buffer);
     // write the file headers
     if(CSVfileRight.is_open())
@@ -728,7 +767,7 @@ void OpenFileRightPowerForce()
     char buffer [80];
 
     // Log directory
-    filenameRightPowerForce = strftime (buffer,80,"/home/pi/Desktop/BT_CDR/DatiPedali_forcePower/RightPowerForceAcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
+    filenameRightPowerForce = strftime (buffer,80,"/home/pi/Desktop/SERVER_BT/DatiPedali&Cardio/RightPowerForceAcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
     CSVfileRightPowerForce.open(buffer);
     // write the file headers
     if(CSVfileRightPowerForce.is_open())
@@ -744,6 +783,33 @@ void OpenFileRightPowerForce()
 void writeFileRight(qint16 parameter1){
     // clock_gettime ( CLOCK_MONOTONIC, &timeLoop);
     CSVfileRight << std::endl << parameter1;
+
+}
+
+void OpenFileRightForceAngle()
+{
+    // Get system  time
+    time_t t = time(nullptr);
+    struct tm * now = localtime( & t );
+    char buffer [80];
+
+    // Log directory
+    filenameRightForceAngle = strftime (buffer,80,"/home/pi/Desktop/SERVER_BT/DatiPedali&Cardio/RightForceAngleAcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
+    CSVfileRightForceAngle.open(buffer);
+    // write the file headers
+    if(CSVfileRightForceAngle.is_open())
+    {
+        CSVfileRightForceAngle << std::endl << "Right Force" << "," << " Right Angle" << std::endl;
+    }
+    else if (!CSVfileRightForceAngle.is_open()) {
+        std::cout << "Error: Unable to open the file " << filenameRightForceAngle << std::endl;
+        return;
+    }
+}
+
+void writeFileRightForceAngle(double parameter1, double parameter2){
+    // clock_gettime ( CLOCK_MONOTONIC, &timeLoop);
+    CSVfileRightForceAngle << std::endl << parameter1 << ",\t" << parameter2;
 
 }
 
@@ -881,6 +947,8 @@ void ConcurrentBtle::getRightForce(const QLowEnergyCharacteristic &characteristi
 
     double powerRight = TF_right*cadence*crank_length/1000;
     //qDebug() << "Instantaneous Power Output Right:" << powerRight <<"W";
+
+    writeFileRightForceAngle(TF_right, angle);
     powerOutputRight(powerRight, angle);
     
 }
@@ -921,88 +989,124 @@ void powerOutputRight (double power, double angle){
     Angle_old_right = angle;
 }
 
-// void OpenFileCardio()
-// {
-//     // Get system  time
-//     time_t t = time(nullptr);
-//     struct tm * now = localtime( & t );
-//     char buffer [80];
+void OpenFileCardio()
+{
+    // Get system  time
+    time_t t = time(nullptr);
+    struct tm * now = localtime( & t );
+    char buffer [80];
 
-//     // Log directory
-//     filenameCardio = strftime (buffer,80,"/home/pi/Desktop/BT_CDR/DatiPedali_forcePower/CardioAcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
-//     CSVfileCardio.open(buffer);
-//     // write the file headers
-//     if(CSVfileCardio.is_open())
-//     {
-//         CSVfileCardio << std::endl << "Heart Rate" << std::endl;
-//     }
-//     else if (!CSVfileCardio.is_open()) {
-//         std::cout << "Error: Unable to open the file " << filenameCardio << std::endl;
-//         return;
-//     }
-// }
+    // Log directory
+    filenameCardio = strftime (buffer,80,"/home/pi/Desktop/SERVER_BT/DatiPedali&Cardio/CardioAcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
+    CSVfileCardio.open(buffer);
+    // write the file headers
+    if(CSVfileCardio.is_open())
+    {
+        CSVfileCardio << std::endl << "Heart Rate" << std::endl;
+    }
+    else if (!CSVfileCardio.is_open()) {
+        std::cout << "Error: Unable to open the file " << filenameCardio << std::endl;
+        return;
+    }
+}
 
-// void writeFileCardio(double parameter1){
-//     // clock_gettime ( CLOCK_MONOTONIC, &timeLoop);
-//     CSVfileCardio << std::endl << parameter1;
+void writeFileCardio(double parameter1){
+    // clock_gettime ( CLOCK_MONOTONIC, &timeLoop);
+    CSVfileCardio << std::endl << parameter1;
+}
 
-// }
+void OpenFileCardioRR()
+{
+    // Get system  time
+    time_t t = time(nullptr);
+    struct tm * now = localtime( & t );
+    char buffer [80];
 
-// void ConcurrentBtle::setupNotificationCardio(QLowEnergyController *device, const QString &name)
-// {
+    // Log directory
+    filenameCardioRR = strftime (buffer,80,"/home/pi/Desktop/SERVER_BT/DatiPedali&Cardio/CardioRRAcquiredData-%Y-%m-%d-%H-%M-%S.csv",now);
+    CSVfileCardioRR.open(buffer);
+    // write the file headers
+    if(CSVfileCardioRR.is_open())
+    {
+        CSVfileCardioRR << std::endl << "Heart Rate RR" << std::endl;
+    }
+    else if (!CSVfileCardioRR.is_open()) {
+        std::cout << "Error: Unable to open the file " << filenameCardioRR << std::endl;
+        return;
+    }
+}
 
-//     if (!device)
-//         return;
+void writeFileCardioRR(double parameter1){
+    // clock_gettime ( CLOCK_MONOTONIC, &timeLoop);
+    CSVfileCardioRR << std::endl << parameter1;
+}
 
-//     QLowEnergyService *service = device->createServiceObject(QBluetoothUuid::HeartRate);
-//     if (!service) {
-//         qDebug() << "***********" << name << "cardio service not found";
-//         return;
-//     }
+void ConcurrentBtle::setupNotificationCardio(QLowEnergyController *device, const QString &name)
+{
 
-//     qDebug() << "#####" << name << service->serviceName() << service->serviceUuid();
+    if (!device)
+        return;
 
-//     connect(service, &QLowEnergyService::stateChanged,
-//             this, [name, service](QLowEnergyService::ServiceState s){
-//         if (s == QLowEnergyService::ServiceDiscovered) {
-//             qDebug() << "***********" << name << "cardio service discovered" << service->serviceUuid();
-//             const QLowEnergyCharacteristic tempData = service->characteristic(QBluetoothUuid::HeartRateMeasurement);
+    QLowEnergyService *service = device->createServiceObject(QBluetoothUuid::HeartRate);
+    if (!service) {
+        qDebug() << "***********" << name << "cardio service not found";
+        return;
+    }
 
-//             if (!tempData.isValid()) {
-//                 qDebug() << "***********" << name << "cardio char not valid";
-//                 return;
-//             }
+    qDebug() << "#####" << name << service->serviceName() << service->serviceUuid();
 
-//             const QLowEnergyDescriptor notification = tempData.descriptor(
-//                         QBluetoothUuid(QBluetoothUuid::ClientCharacteristicConfiguration));
-//             if (!notification.isValid()) {
-//                 qDebug() << "***********" << name << "cardio notification not valid";
-//                 return;
-//             }
+    connect(service, &QLowEnergyService::stateChanged,
+            this, [name, service](QLowEnergyService::ServiceState s){
+        if (s == QLowEnergyService::ServiceDiscovered) {
+            qDebug() << "***********" << name << "cardio service discovered" << service->serviceUuid();
+            const QLowEnergyCharacteristic tempData = service->characteristic(QBluetoothUuid::HeartRateMeasurement);
 
-//             service->writeDescriptor(notification, QByteArray::fromHex("0100"));
+            if (!tempData.isValid()) {
+                qDebug() << "***********" << name << "cardio char not valid";
+                return;
+            }
 
-//         }
-//     });
+            const QLowEnergyDescriptor notification = tempData.descriptor(
+                        QBluetoothUuid(QBluetoothUuid::ClientCharacteristicConfiguration));
+            if (!notification.isValid()) {
+                qDebug() << "***********" << name << "cardio notification not valid";
+                return;
+            }
+
+            service->writeDescriptor(notification, QByteArray::fromHex("0100"));
+
+        }
+    });
 
 
-//     connect(service, &QLowEnergyService::characteristicChanged,
-//             this, [name](const QLowEnergyCharacteristic &characteristic, const QByteArray &newValue) {
+    connect(service, &QLowEnergyService::characteristicChanged,
+            this, [name](const QLowEnergyCharacteristic &characteristic, const QByteArray &newValue) {
 
-//         int a = (newValue.size());
-//         // qDebug() << "Size:" << a;
+        int a = (newValue.size());
+        // qDebug() << "Size:" << a;
 
-//         const char *data = newValue.constData();
-//         quint8 flags = data[0];
+        const char *data = newValue.constData();
+        quint8 flags = data[0];
 
-//         //HR 8bit
-//         quint8 *heartrate= (quint8 *) &data[1];
-//         qDebug() << "HR value" << name << *heartrate <<"bpm" ;
-//         double hr_value = *heartrate;
-//         write_heart_rate(hr_value);
-//         writeFileCardio(hr_value);
+        //HR 8bit
+        quint8 *heartrate= (quint8 *) &data[1];
+        //qDebug() << "HR value" << name << *heartrate <<"bpm" ;
+        double hr_value = *heartrate;
 
-//     });
-//    service->discoverDetails();
-// }
+       //        RR interval
+       for(int k = 1; k < (a/2); k++) {
+//            int b=2*k;
+//            qDebug() << "Index:" << b;
+           quint16 *RRinterval = (quint16 *) &data[2*k];
+           //qDebug() << "RR interval value:" << (double)(*RRinterval)/1024 << "s";
+           double rr_value = *RRinterval;
+           writeFileCardioRR(rr_value);
+       }
+
+        write_heart_rate(hr_value);
+        writeFileCardio(hr_value);
+
+    });
+   service->discoverDetails();
+}
 
