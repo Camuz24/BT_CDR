@@ -676,10 +676,10 @@ void ConcurrentBtle::getLeftForce(const QLowEnergyCharacteristic &characteristic
  //prendo forza tangenziale e la moltiplica per la lunghezza della pedivella (ottengo la coppia) e poi lo moltiplico per la cadenza
         
     // Tangential force
-    qint16 TFpo = (static_cast<qint16>(newValue[8]) | (static_cast<qint16>(newValue[9]) << 8));
-    double TF_left = (double)(TFpo)/10;
-    // qint16 *TFpo = (qint16 *) &data[8];
-    // double TF_left = (double)(*TFpo)/10;
+    // qint16 TFpo = (static_cast<qint16>(newValue[8]) | (static_cast<qint16>(newValue[9]) << 8));
+    // double TF_left = (double)(TFpo)/10;
+    qint16 *TFpo = (qint16 *) &data[8];
+    double TF_left = (double)(*TFpo)/10;
 
     //qDebug() << "Left TF value:" << TF_left << "N";
     //leftForceVector.push_back(TF_left);
@@ -936,10 +936,10 @@ void ConcurrentBtle::getRightForce(const QLowEnergyCharacteristic &characteristi
  //prendo forza tangenziale e la moltiplica per la lunghezza della pedivella (ottengo la coppia) e poi lo moltiplico per la cadenza
         
     // Tangential force
-    qint16 TFpo = (static_cast<qint16>(newValue[8]) | (static_cast<qint16>(newValue[9]) << 8));
-    double TF_right = (double)(TFpo)/10;
-    // qint16 *TFpo = (qint16 *) &data[8];
-    // double TF_right = (double)(*TFpo)/10;
+    // qint16 TFpo = (static_cast<qint16>(newValue[8]) | (static_cast<qint16>(newValue[9]) << 8));
+    // double TF_right = (double)(TFpo)/10;
+    qint16 *TFpo = (qint16 *) &data[8];
+    double TF_right = (double)(*TFpo)/10;
 
     //qDebug() << "Right TF value:" << TF_right << "N";
     //rightForceVector.push_back(TF_right);

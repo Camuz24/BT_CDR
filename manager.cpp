@@ -27,7 +27,7 @@ manager::manager()
 {
     stopThread = false;
     stopSend = false;
-    first_time = true;
+    first_time = false;
     std::srand(static_cast<unsigned>(std::time(0)));
 }
 
@@ -105,6 +105,8 @@ std::cout << "Received message: " << std::endl;
             else if(payload == "IceTrike")    trike = 1;
             else if(payload == "BerkelBike")    trike = 2;
             //trike_ok = true;
+        }else if(type == "setZero"){
+            shmem->data->angle_shift = stoi(payload);
         }
         
         stopSend = false;
@@ -113,8 +115,8 @@ std::cout << "Received message: " << std::endl;
 
     if(first_time)
     {
-        pedals = 1;     // forza ricerca a pedali Colombo
-        trike = 1;      // forza impostazione IceTrike
+        pedals = 0;     // forza ricerca pedali
+        trike = 0;      // forza impostazione Trike
         btle = new ConcurrentBtle(pedals, trike);
         std::cout << "Called constructor concurrentbtle" << std::endl;
     }

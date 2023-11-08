@@ -24,6 +24,7 @@ class shared_memory
         bool check_stim2=0;
 
         bool angle_pedals = 0;
+        int angle_shift;
 
         bool check_pedal_left=0;
         bool check_pedal_right=0;
@@ -141,7 +142,6 @@ class shared_memory
         int saturation_min_d = 0;
 
         double m_cadence = 0.0;
-
 
         int stimulator_calibration = 0;
         int current_calibration    = 0;
