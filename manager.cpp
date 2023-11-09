@@ -117,6 +117,7 @@ std::cout << "Received message: " << std::endl;
     {
         pedals = 0;     // forza ricerca pedali
         trike = 0;      // forza impostazione Trike
+        first_time = false;
         btle = new ConcurrentBtle(pedals, trike);
         std::cout << "Called constructor concurrentbtle" << std::endl;
     }
