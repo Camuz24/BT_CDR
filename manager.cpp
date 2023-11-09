@@ -27,7 +27,7 @@ manager::manager()
 {
     stopThread = false;
     stopSend = false;
-    first_time = false;
+    first_time = true;
     std::srand(static_cast<unsigned>(std::time(0)));
 }
 
