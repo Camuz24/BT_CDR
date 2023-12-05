@@ -121,7 +121,8 @@ void manager::writeOnSM(const QString &sender, const QString &message){
             fileName = payload;
         }
         else if(type == "trainingModality"){
-            //shmem->data->training_modality_from_gui = stoi(payload);
+            //shmem->data->training_modality_from_gui = stoi(payload);  // 0: fixed frequency
+                                                                        // 1: doublets
         }
         else if(type=="startTraining"){
             std::string json_directory = "../../data/"; //TODO: change here accordingly of where the executable file will be!!!
