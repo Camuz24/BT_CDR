@@ -43,8 +43,8 @@ int main(int argc, char *argv[]){
 
     chatServer = new ChatServer();
     chatServer->startServer(address);
-    //ConcurrentBtle* btle;
-    //btle = new ConcurrentBtle(); 
+    ConcurrentBtle* btle;
+    btle = new ConcurrentBtle(); 
     
     signal(SIGINT, myInterruptHandler);
 
